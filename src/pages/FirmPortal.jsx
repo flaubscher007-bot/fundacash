@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Building2, Upload, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Clock, AlertTriangle, Download } from 'lucide-react';
+import FirmPinnedWidgets from '../components/FirmPinnedWidgets';
 import { exportTransactionsCsv } from '../utils/exportCsv';
 
 const fmt = (n) => n ? `R ${Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 0 })}` : '—';
@@ -13,10 +14,12 @@ export default function FirmPortal() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [uploading, setUploading] = useState({});
+  const [pinnedWidgets, setPinnedWidgets] = useState([]);
 
   useEffect(() => {
     base44.auth.me().then(async (me) => {
       setUser(me);
+      setPinnedWidgets(me?.pinned_widgets || []);
       if (me?.assigned_firm) {
         const [txns, docs] = await Promise.all([
           base44.entities.Transaction.filter({ law_firm: me.assigned_firm }, '-drawdown_date', 2000),
@@ -95,20 +98,12 @@ export default function FirmPortal() {
         </button>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Advanced', value: fmt(stats.drawdown), color: 'text-primary' },
-          { label: 'Outstanding Balance', value: fmt(stats.outstanding), color: 'text-amber-400' },
-          { label: 'Total Repaid', value: fmt(stats.paid), color: 'text-emerald-400' },
-          { label: 'Settled Matters', value: stats.settled, color: 'text-blue-400' },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground font-medium">{label}</p>
-            <p className={`mt-1 text-xl font-space font-bold ${color}`}>{value}</p>
-          </div>
-        ))}
-      </div>
+      {/* Pinned widgets */}
+      <FirmPinnedWidgets
+        transactions={transactions}
+        pinnedWidgets={pinnedWidgets}
+        onPinsChange={setPinnedWidgets}
+      />
 
       {/* Transactions list */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">

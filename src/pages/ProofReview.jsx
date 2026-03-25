@@ -53,6 +53,9 @@ export default function ProofReview() {
       }
     }
 
+    // Send notifications (email + in-app)
+    await base44.functions.invoke('notifyPaymentEvent', { action, doc: { ...doc, admin_comments: comments[doc.id] || doc.admin_comments || '' } });
+
     setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, ...updatePayload } : d));
     setExpanded(null);
     setProcessing(p => ({ ...p, [doc.id]: null }));
