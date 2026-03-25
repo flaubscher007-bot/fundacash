@@ -96,10 +96,11 @@ export default function FirmDashboard({ firmName, transactions, agreement }) {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Capital Advanced" value={fmt(stats.drawdown)} sub={`${active.length} transactions`} color="text-primary" />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <KpiCard label="Drawdown Amount" value={fmt(stats.drawdown)} sub={`${active.length} transactions`} color="text-primary" />
         <KpiCard label="Outstanding Capital" value={fmt(stats.outstanding)} sub={`${stats.partial} partial payments`} color="text-amber-400" />
         <KpiCard label="Funda Interest" value={fmt(stats.fundaInterest)} sub={agreement ? `${agreement.funda_interest_rate}% p.a.` : 'No agreement'} color="text-emerald-400" />
+        <KpiCard label="Attorney Interest" value={fmt(stats.attorneyInterest)} sub={agreement ? `${agreement.attorney_interest_rate}% p.a.` : '—'} color="text-chart-3" />
         <KpiCard label="Total Repaid" value={fmt(stats.paid)} sub={`${stats.settled} settled`} color="text-blue-400" />
       </div>
 
