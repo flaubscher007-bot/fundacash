@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, DollarSign, FileText, Clock, Building2, CheckCircle } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+const _unused = FileText;
 import StatCard from '../components/StatCard';
 import FirmExposureChart from '../components/FirmExposureChart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';

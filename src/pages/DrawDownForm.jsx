@@ -188,6 +188,14 @@ export default function DrawDownForm() {
         </div>
       )}
 
+      {/* Payments tab */}
+      {!isNew && activeTab === 'payments' && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h2 className="font-space font-semibold text-foreground mb-4">Payment Log</h2>
+          <PaymentsTab transactionId={id} traceNo={form.trace_no} lawFirm={form.law_firm} />
+        </div>
+      )}
+
       {/* Activity tab */}
       {!isNew && activeTab === 'activity' && (
         <div className="bg-card border border-border rounded-xl p-6">
