@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3, ScrollText, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3, ScrollText, ShieldCheck, Users as UsersIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
@@ -20,6 +20,7 @@ const navItems = [
   { path: '/aging', icon: BarChart3, label: 'Aging Report' },
   { path: '/agreements', icon: ScrollText, label: 'Agreements' },
   { path: '/proof-review', icon: ShieldCheck, label: 'Proof Review' },
+  { path: '/users', icon: UsersIcon, label: 'User Management' },
 ];
 
 // Bottom nav items for mobile (keep it to 4 key items)
