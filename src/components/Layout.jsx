@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3, ScrollText, ShieldCheck, Users as UsersIcon } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3, ScrollText, ShieldCheck, Users as UsersIcon, Settings as SettingsIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
@@ -21,6 +21,7 @@ const navItems = [
   { path: '/agreements', icon: ScrollText, label: 'Agreements' },
   { path: '/proof-review', icon: ShieldCheck, label: 'Proof Review' },
   { path: '/users', icon: UsersIcon, label: 'User Management' },
+  { path: '/settings', icon: SettingsIcon, label: 'Settings' },
 ];
 
 // Bottom nav items for mobile (keep it to 4 key items)
@@ -141,6 +142,14 @@ export default function Layout() {
             <span className="text-xs text-muted-foreground">Alerts</span>
             <NotificationBell userEmail={userEmail} />
           </div>
+          <Link
+            to="/settings"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
+          >
+            <SettingsIcon className="w-4 h-4" />
+            Settings
+          </Link>
           <button
             onClick={() => base44.auth.logout()}
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
