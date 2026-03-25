@@ -127,6 +127,12 @@ export default function FirmDetail() {
               agreement={agreement}
             />
           )}
+          {tab === 'Payments' && (
+            <FirmPaymentsTab
+              firmName={firmName}
+              transactions={transactions}
+            />
+          )}
           {tab === 'Agreements' && (
             <AgreementsTab
               firmName={firmName}
