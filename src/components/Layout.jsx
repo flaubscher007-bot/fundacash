@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { LayoutDashboard, FileText, Plus, Menu, X, TrendingUp, Building2, LogOut, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
