@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle, Upload, FilePlus } from 'lucide-react';
 import TransactionDocuments from '../components/TransactionDocuments';
+import ActivityTab from '../components/ActivityTab';
 import BulkImportDrawdown from '../components/BulkImportDrawdown';
 
 const FIRMS = ['S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LAWYERS', 'A WOLMARANS INCORPORATED'];
@@ -24,6 +25,8 @@ export default function DrawDownForm() {
   const isNew = !id || id === 'new';
 
   const [mode, setMode] = useState('single');
+  const [activeTab, setActiveTab] = useState('details');
+  const [originalForm, setOriginalForm] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -31,7 +34,7 @@ export default function DrawDownForm() {
   useEffect(() => {
     if (!isNew) {
       base44.entities.Transaction.filter({ id }).then(data => {
-        if (data[0]) setForm(data[0]);
+        if (data[0]) { setForm(data[0]); setOriginalForm(data[0]); }
         setLoading(false);
       });
     }
@@ -52,9 +55,30 @@ export default function DrawDownForm() {
       if (payload[k] !== '' && payload[k] !== null) payload[k] = Number(payload[k]) || 0;
     });
     if (isNew) {
-      await base44.entities.Transaction.create(payload);
+      const created = await base44.entities.Transaction.create(payload);
+      await base44.functions.invoke('logAuditEvent', {
+        transaction_id: created.id,
+        trace_no: created.trace_no,
+        action: 'created',
+        description: `Transaction ${created.trace_no} created`,
+        changes: [],
+      });
     } else {
       await base44.entities.Transaction.update(id, payload);
+      // Compute changes
+      const TRACKED = ['drawdown_amount','drawdown_date','funda_interest','attorney_interest','new_capital_amount','amount_attorney_paid','payment_status','approved','settlement_payment_date','total_invoiced','assessment_status','attorney_interest_start_date'];
+      const changes = TRACKED
+        .filter(k => String(payload[k] ?? '') !== String(originalForm?.[k] ?? ''))
+        .map(k => ({ field: k, old_value: String(originalForm?.[k] ?? ''), new_value: String(payload[k] ?? '') }));
+      if (changes.length > 0) {
+        await base44.functions.invoke('logAuditEvent', {
+          transaction_id: id,
+          trace_no: form.trace_no,
+          action: 'updated',
+          changes,
+        });
+      }
+      setOriginalForm(payload);
     }
     setSaving(false);
     navigate('/transactions');
@@ -109,19 +133,31 @@ export default function DrawDownForm() {
         </div>
       </div>
 
-      {/* Bulk Import Mode */}
-      {isNew && mode === 'bulk' && (
-        <div className="bg-card border border-border rounded-xl p-6">
-          <BulkImportDrawdown
-            defaultFirm={form.law_firm}
-            onImported={(count) => { alert(`${count} transactions imported successfully!`); navigate('/transactions'); }}
-            onCancel={() => setMode('single')}
-          />
+      {/* Tab navigation (edit mode only) */}
+      {!isNew && mode === 'single' && (
+        <div className="flex border-b border-border gap-0">
+          {[['details','Details'], ['activity','Activity']].map(([tab, label]) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >{label}</button>
+          ))}
         </div>
       )}
 
-      {/* Single mode */}
-      {mode === 'single' && (
+      {/* Activity tab */}
+      {!isNew && activeTab === 'activity' && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h2 className="font-space font-semibold text-foreground mb-4">Activity History</h2>
+          <ActivityTab transactionId={id} />
+        </div>
+      )}
+
+      {/* Bulk Import Mode */}
+      {mode === 'single' && activeTab === 'details' && (
         <>
           {!isNew && isSettled && (
             <div className="flex items-center gap-3 px-5 py-4 bg-emerald-400/10 border border-emerald-400/40 rounded-xl">

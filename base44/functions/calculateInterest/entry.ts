@@ -67,11 +67,19 @@ Deno.serve(async (req) => {
 
     if (fundaChanged || attorneyChanged) {
       const updatePayload = {};
-      if (fundaChanged) updatePayload.funda_interest = fundaInterest;
-      if (attorneyChanged) updatePayload.attorney_interest = attorneyInterest;
-      // New Capital Balance = drawdown + funda interest
+      const auditChanges = [];
+      if (fundaChanged) { updatePayload.funda_interest = fundaInterest; auditChanges.push({ field: 'funda_interest', old_value: String(txn.funda_interest || 0), new_value: String(fundaInterest) }); }
+      if (attorneyChanged) { updatePayload.attorney_interest = attorneyInterest; auditChanges.push({ field: 'attorney_interest', old_value: String(txn.attorney_interest || 0), new_value: String(attorneyInterest) }); }
       updatePayload.new_capital_amount = parseFloat((principal + fundaInterest).toFixed(2));
       await base44.asServiceRole.entities.Transaction.update(txn.id, updatePayload);
+      await base44.asServiceRole.entities.AuditLog.create({
+        transaction_id: txn.id,
+        trace_no: txn.trace_no,
+        action: 'interest_calculated',
+        description: `Nightly interest update: ${daysElapsed} days elapsed`,
+        changes: auditChanges,
+        timestamp: new Date().toISOString(),
+      });
       updated++;
     } else {
       skipped++;
