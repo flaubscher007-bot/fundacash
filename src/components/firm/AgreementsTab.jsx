@@ -84,8 +84,8 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
               <option>Actual/360</option>
             </select>
           </Field>
-          <Field label="Payment Terms (days)">
-            <input type="number" {...f('payment_terms_days')} className={inputCls} />
+          <Field label="Payment Terms (months)">
+            <input type="number" {...f('payment_terms_days')} className={inputCls} placeholder="e.g. 6" />
           </Field>
           <Field label="Agreement Date">
             <input type="date" {...f('agreement_date')} className={inputCls} />
