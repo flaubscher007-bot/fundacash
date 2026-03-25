@@ -3,6 +3,14 @@ import { useState } from 'react';
 import { LayoutDashboard, FileText, Plus, Menu, X, TrendingUp, Building2, LogOut } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
+const FIRMS = [
+  { label: 'S Steyn Inc', slug: 'ssteyn' },
+  { label: 'LHL Attorneys', slug: 'lhl' },
+  { label: 'DBVS Attorneys', slug: 'dbvs' },
+  { label: 'RH Lawyers', slug: 'rhlawyers' },
+  { label: 'A Wolmarans Inc', slug: 'wolmarans' },
+];
+
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/transactions', icon: FileText, label: 'Transactions' },
@@ -57,6 +65,31 @@ export default function Layout() {
           })}
         </nav>
 
+        {/* Law Firms */}
+        <div className="px-4 pb-2">
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Law Firms</p>
+          <div className="space-y-0.5">
+            {FIRMS.map(({ label, slug }) => {
+              const active = location.pathname === `/firm/${slug}`;
+              return (
+                <Link
+                  key={slug}
+                  to={`/firm/${slug}`}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Footer */}
         <div className="p-4 border-t border-sidebar-border">
           <button
@@ -67,7 +100,7 @@ export default function Layout() {
             Sign Out
           </button>
         </div>
-      </aside>
+        </aside>
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
