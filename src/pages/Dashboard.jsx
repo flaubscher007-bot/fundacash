@@ -30,8 +30,7 @@ export default function Dashboard() {
     return s + nc;
   }, 0);
   const totalSettled = transactions.filter(t => t.payment_status === 'PAID').reduce((s, t) => s + (t.amount_attorney_paid || 0), 0);
-  const activeCount = transactions.filter(t => t.approved !== 'CANCELLED').length;
-  const pendingPayment = transactions.filter(t => !t.amount_attorney_paid && t.drawdown_amount > 0).length;
+
 
   // Per firm bar chart data
   const firmData = FIRMS.map(firm => {
