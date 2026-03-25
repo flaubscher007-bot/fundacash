@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { LayoutDashboard, FileText, Plus, Menu, X, TrendingUp, Building2, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus, Menu, X, TrendingUp, Building2, LogOut, CalendarDays } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/transactions', icon: FileText, label: 'Transactions' },
   { path: '/drawdown/new', icon: Plus, label: 'New Draw-Down' },
+  { path: '/calendar', icon: CalendarDays, label: 'Repayment Calendar' },
 ];
 
 export default function Layout() {
