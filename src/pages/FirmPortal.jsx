@@ -39,7 +39,7 @@ export default function FirmPortal() {
     return { drawdown, outstanding, paid, settled };
   }, [transactions]);
 
-  const handleUpload = async (txn, file) => {
+  const handleUpload = async (txn, file, paymentAmount) => {
     setUploading(p => ({ ...p, [txn.id]: true }));
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     const doc = await base44.entities.Document.create({
@@ -51,6 +51,8 @@ export default function FirmPortal() {
       file_url,
       file_name: file.name,
       upload_date: new Date().toISOString().split('T')[0],
+      review_status: 'PENDING_REVIEW',
+      payment_amount: paymentAmount ? Number(paymentAmount) : undefined,
     });
     setDocuments(prev => [doc, ...prev]);
     setUploading(p => ({ ...p, [txn.id]: false }));
@@ -182,20 +184,7 @@ export default function FirmPortal() {
 
                     {/* Proof of payment upload */}
                     {t.payment_status !== 'PAID' && (
-                      <div className="border border-border rounded-lg p-4 space-y-3">
-                        <p className="text-sm font-semibold text-foreground">Upload Proof of Payment</p>
-                        <label className={`inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
-                          <Upload className="w-4 h-4" />
-                          {isUploading ? 'Uploading...' : 'Choose File'}
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={e => { if (e.target.files[0]) handleUpload(t, e.target.files[0]); e.target.value = ''; }}
-                          />
-                        </label>
-                        <p className="text-xs text-muted-foreground">Accepted: PDF, JPG, PNG</p>
-                      </div>
+                      <UploadProofForm txn={t} isUploading={isUploading} onUpload={handleUpload} />
                     )}
 
                     {/* Existing docs */}

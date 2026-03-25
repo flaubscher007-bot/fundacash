@@ -14,6 +14,7 @@ import RepaymentCalendar from './pages/RepaymentCalendar';
 import AgingReport from './pages/AgingReport';
 import FirmPortal from './pages/FirmPortal';
 import AgreementsAdmin from './pages/AgreementsAdmin';
+import ProofReview from './pages/ProofReview';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/aging" element={<AgingReport />} />
         <Route path="/portal" element={<FirmPortal />} />
         <Route path="/agreements" element={<AgreementsAdmin />} />
+        <Route path="/proof-review" element={<ProofReview />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
