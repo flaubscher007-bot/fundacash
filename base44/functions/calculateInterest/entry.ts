@@ -53,12 +53,13 @@ Deno.serve(async (req) => {
 
     const principal = txn.drawdown_amount;
 
-    // Monthly simple interest: principal × annual_rate / 12
+    // Daily simple interest based on a monthly rate
+    // daily_rate = monthly_rate / 30; total = principal × daily_rate × days_elapsed
     const fundaRate = (ag.funda_interest_rate || 0) / 100;
-    const fundaInterest = parseFloat((principal * fundaRate / 12).toFixed(2));
+    const fundaInterest = parseFloat((principal * (fundaRate / 30) * daysElapsed).toFixed(2));
 
     const attorneyRate = (ag.attorney_interest_rate || 0) / 100;
-    const attorneyInterest = parseFloat((principal * attorneyRate / 12).toFixed(2));
+    const attorneyInterest = parseFloat((principal * (attorneyRate / 30) * daysElapsed).toFixed(2));
 
     const fundaChanged = Math.abs((txn.funda_interest || 0) - fundaInterest) > 0.01;
     const attorneyChanged = Math.abs((txn.attorney_interest || 0) - attorneyInterest) > 0.01;
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
         transaction_id: txn.id,
         trace_no: txn.trace_no,
         action: 'interest_calculated',
-        description: `Monthly interest update (per month basis)`,
+        description: `Daily interest update: ${daysElapsed} days elapsed (monthly rate basis)`,
         changes: auditChanges,
         timestamp: new Date().toISOString(),
       });

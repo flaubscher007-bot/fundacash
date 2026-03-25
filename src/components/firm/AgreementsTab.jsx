@@ -71,10 +71,10 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
         <h3 className="font-space font-semibold text-foreground">Interest & Payment Terms</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Field label="Fundamedical Interest Rate (% p.a.)">
+          <Field label="Fundamedical Interest Rate (% per month)">
             <input type="number" step="0.01" {...f('funda_interest_rate')} className={inputCls} placeholder="e.g. 18" />
           </Field>
-          <Field label="Law Firm Interest Rate (% p.a.)">
+          <Field label="Law Firm Interest Rate (% per month)">
             <input type="number" step="0.01" {...f('attorney_interest_rate')} className={inputCls} placeholder="e.g. 5" />
           </Field>
           <Field label="Interest Basis">
