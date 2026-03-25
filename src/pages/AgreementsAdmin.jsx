@@ -16,6 +16,9 @@ const EMPTY = {
   interest_basis: '365 days',
   interest_start_trigger: 'drawdown_date',
   payment_terms_days: '',
+  capital_limit: '',
+  admin_fee_rate: '',
+  admin_fee_fixed: '',
   agreement_date: '',
   notes: '',
 };
@@ -71,8 +74,8 @@ export default function AgreementsAdmin() {
   return (
     <div className="max-w-3xl mx-auto space-y-4">
       <div>
-        <h1 className="font-space text-2xl font-bold text-foreground">Firm Agreements</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage interest rates and payment terms for each law firm.</p>
+        <h1 className="font-space text-2xl font-bold text-foreground">Firm Agreement Settings</h1>
+        <p className="text-muted-foreground text-sm mt-1">Configure interest rates, capital limits, and fee structures per firm. The daily interest calculation uses these values automatically.</p>
       </div>
 
       <div className="space-y-3">
@@ -109,34 +112,55 @@ export default function AgreementsAdmin() {
               {/* Form */}
               {isOpen && form && (
                 <div className="px-5 pb-5 border-t border-border space-y-4 pt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField label="Funda Interest Rate (% per month)">
-                      <input type="number" step="0.01" value={form.funda_interest_rate} onChange={e => setField(firm, 'funda_interest_rate', e.target.value)} placeholder="e.g. 3.5" />
-                    </FormField>
-                    <FormField label="Attorney Interest Rate (% per month)">
-                      <input type="number" step="0.01" value={form.attorney_interest_rate} onChange={e => setField(firm, 'attorney_interest_rate', e.target.value)} placeholder="e.g. 2.0" />
-                    </FormField>
-                    <FormField label="Interest Basis">
-                      <select value={form.interest_basis} onChange={e => setField(firm, 'interest_basis', e.target.value)}>
-                        <option value="365 days">365 days</option>
-                        <option value="30/360">30/360</option>
-                        <option value="Actual/360">Actual/360</option>
-                      </select>
-                    </FormField>
-                    <FormField label="Interest Start From">
-                      <select value={form.interest_start_trigger} onChange={e => setField(firm, 'interest_start_trigger', e.target.value)}>
-                        <option value="drawdown_date">Draw-Down Date</option>
-                        <option value="invoice_date">Invoice Date</option>
-                        <option value="assessment_date">Assessment Date</option>
-                      </select>
-                    </FormField>
-                    <FormField label="Payment Terms (days)">
-                      <input type="number" value={form.payment_terms_days} onChange={e => setField(firm, 'payment_terms_days', e.target.value)} placeholder="e.g. 90" />
-                    </FormField>
-                    <FormField label="Agreement Date">
-                      <input type="date" value={form.agreement_date} onChange={e => setField(firm, 'agreement_date', e.target.value)} />
-                    </FormField>
+                  {/* Interest Rates */}
+                  <div className="pb-1">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Interest Rates</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField label="Funda Interest Rate (% per month)">
+                        <input type="number" step="0.01" value={form.funda_interest_rate} onChange={e => setField(firm, 'funda_interest_rate', e.target.value)} placeholder="e.g. 3.5" />
+                      </FormField>
+                      <FormField label="Attorney Interest Rate (% per month)">
+                        <input type="number" step="0.01" value={form.attorney_interest_rate} onChange={e => setField(firm, 'attorney_interest_rate', e.target.value)} placeholder="e.g. 2.0" />
+                      </FormField>
+                      <FormField label="Interest Day-Count Basis">
+                        <select value={form.interest_basis} onChange={e => setField(firm, 'interest_basis', e.target.value)}>
+                          <option value="365 days">365 days (Actual/365)</option>
+                          <option value="30/360">30/360</option>
+                          <option value="Actual/360">Actual/360</option>
+                        </select>
+                      </FormField>
+                      <FormField label="Interest Starts From">
+                        <select value={form.interest_start_trigger} onChange={e => setField(firm, 'interest_start_trigger', e.target.value)}>
+                          <option value="drawdown_date">Draw-Down Date</option>
+                          <option value="invoice_date">Invoice Date</option>
+                          <option value="assessment_date">Assessment Date</option>
+                        </select>
+                      </FormField>
+                    </div>
                   </div>
+
+                  {/* Capital & Fees */}
+                  <div className="pb-1">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Capital Limits & Fee Structure</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField label="Max Capital Limit per Transaction (R)">
+                        <input type="number" value={form.capital_limit} onChange={e => setField(firm, 'capital_limit', e.target.value)} placeholder="e.g. 500000" />
+                      </FormField>
+                      <FormField label="Payment Terms (days)">
+                        <input type="number" value={form.payment_terms_days} onChange={e => setField(firm, 'payment_terms_days', e.target.value)} placeholder="e.g. 90" />
+                      </FormField>
+                      <FormField label="Admin Fee (% of drawdown)">
+                        <input type="number" step="0.01" value={form.admin_fee_rate} onChange={e => setField(firm, 'admin_fee_rate', e.target.value)} placeholder="e.g. 1.5" />
+                      </FormField>
+                      <FormField label="Admin Fee – Fixed Amount (R)">
+                        <input type="number" value={form.admin_fee_fixed} onChange={e => setField(firm, 'admin_fee_fixed', e.target.value)} placeholder="Leave blank if using % fee" />
+                      </FormField>
+                      <FormField label="Agreement Date">
+                        <input type="date" value={form.agreement_date} onChange={e => setField(firm, 'agreement_date', e.target.value)} />
+                      </FormField>
+                    </div>
+                  </div>
+
                   <FormField label="Notes">
                     <textarea value={form.notes} onChange={e => setField(firm, 'notes', e.target.value)} rows={2} placeholder="Optional notes..." className="resize-none" />
                   </FormField>
