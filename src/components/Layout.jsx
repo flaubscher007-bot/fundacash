@@ -99,6 +99,7 @@ export default function Layout() {
         </nav>
 
         {/* Law Firms */}
+        {!isFirmUser && (
         <div className="px-4 pb-2">
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Law Firms</p>
           <div className="space-y-0.5">
@@ -122,6 +123,7 @@ export default function Layout() {
             })}
           </div>
         </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-sidebar-border">
