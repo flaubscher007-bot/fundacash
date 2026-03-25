@@ -11,7 +11,6 @@ import Transactions from './pages/Transactions';
 import DrawDownForm from './pages/DrawDownForm';
 import FirmDetail from './pages/FirmDetail';
 import RepaymentCalendar from './pages/RepaymentCalendar';
-import RepaymentCalendar from './pages/RepaymentCalendar';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();

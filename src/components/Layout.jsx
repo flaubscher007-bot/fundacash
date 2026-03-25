@@ -18,6 +18,14 @@ const navItems = [
   { path: '/calendar', icon: CalendarDays, label: 'Repayment Calendar' },
 ];
 
+// Bottom nav items for mobile (keep it to 4 key items)
+const mobileNavItems = [
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/transactions', icon: FileText, label: 'Transactions' },
+  { path: '/drawdown/new', icon: Plus, label: 'New' },
+  { path: '/calendar', icon: CalendarDays, label: 'Calendar' },
+];
+
 export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,7 +37,7 @@ export default function Layout() {
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar — desktop always visible, mobile slide-in */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
@@ -45,7 +53,7 @@ export default function Layout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ path, icon: Icon, label }) => {
             const active = location.pathname === path;
             return (
@@ -101,21 +109,41 @@ export default function Layout() {
             Sign Out
           </button>
         </div>
-        </aside>
+      </aside>
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar mobile */}
-        <header className="lg:hidden flex items-center gap-4 px-4 py-3 border-b border-border bg-card">
+        {/* Top bar — mobile only */}
+        <header className="lg:hidden flex items-center gap-4 px-4 py-3 border-b border-border bg-card flex-shrink-0">
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-muted">
             <Menu className="w-5 h-5" />
           </button>
           <div className="font-space font-semibold text-foreground">FundaCash</div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+        {/* Page content — leaves room for mobile bottom nav */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-20 lg:pb-8">
           <Outlet />
         </main>
+
+        {/* Bottom nav — mobile only */}
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t border-border flex items-stretch safe-area-inset-bottom">
+          {mobileNavItems.map(({ path, icon: Icon, label }) => {
+            const active = location.pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-1 text-[10px] font-medium transition-colors ${
+                  active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className={`w-5 h-5 ${active ? 'text-primary' : ''}`} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );
