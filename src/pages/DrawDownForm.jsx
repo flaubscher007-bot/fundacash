@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle, Upload, FilePlus } from 'lucide-react';
+import BulkImportDrawdown from '../components/BulkImportDrawdown';
 
 const FIRMS = ['S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LAWYERS', 'A WOLMARANS INCORPORATED'];
 
@@ -22,6 +23,7 @@ export default function DrawDownForm() {
   const id = window.location.pathname.split('/drawdown/')[1];
   const isNew = !id || id === 'new';
 
+  const [mode, setMode] = useState('single'); // 'single' | 'bulk'
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -78,18 +80,42 @@ export default function DrawDownForm() {
           </div>
         </div>
         <div className="flex gap-2">
+          {isNew && (
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              <button onClick={() => setMode('single')} className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${mode === 'single' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                <FilePlus className="w-4 h-4" /> Single
+              </button>
+              <button onClick={() => setMode('bulk')} className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${mode === 'bulk' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
+                <Upload className="w-4 h-4" /> Bulk Import
+              </button>
+            </div>
+          )}
           {!isNew && (
             <button onClick={handleDelete} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 text-sm transition-colors">
               <Trash2 className="w-4 h-4" /> Delete
             </button>
           )}
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors disabled:opacity-60">
-            <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
-          </button>
+          {mode === 'single' && (
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors disabled:opacity-60">
+              <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Settlement Banner */}
+      {/* Bulk Import Mode */}
+      {isNew && mode === 'bulk' && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <BulkImportDrawdown
+            defaultFirm={form.law_firm}
+            onImported={(count) => { alert(`${count} transactions imported successfully!`); navigate('/transactions'); }}
+            onCancel={() => setMode('single')}
+          />
+        </div>
+      )}
+
+      {/* Single mode content below — hidden when bulk */}
+      {mode === 'bulk' ? null : <>
       {!isNew && isSettled && (
         <div className="flex items-center gap-3 px-5 py-4 bg-emerald-400/10 border border-emerald-400/40 rounded-xl">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
@@ -221,6 +247,7 @@ export default function DrawDownForm() {
           <textarea value={form.notes} onChange={set('notes')} rows={3} className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none" placeholder="Additional notes..." />
         </div>
       </Section>
+      </>
     </div>
   );
 }
