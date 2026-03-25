@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import DrawDownForm from './pages/DrawDownForm';
 import FirmDetail from './pages/FirmDetail';
+import RepaymentCalendar from './pages/RepaymentCalendar';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/drawdown/new" element={<DrawDownForm />} />
         <Route path="/drawdown/:id" element={<DrawDownForm />} />
         <Route path="/firm/:slug" element={<FirmDetail />} />
+        <Route path="/calendar" element={<RepaymentCalendar />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
