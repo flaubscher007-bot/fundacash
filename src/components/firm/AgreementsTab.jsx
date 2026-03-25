@@ -14,6 +14,17 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
     notes: agreement?.notes || '',
   });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setForm({
+      funda_interest_rate: agreement?.funda_interest_rate || '',
+      attorney_interest_rate: agreement?.attorney_interest_rate || '',
+      interest_basis: agreement?.interest_basis || '365 days',
+      payment_terms_days: agreement?.payment_terms_days || '',
+      agreement_date: agreement?.agreement_date || '',
+      notes: agreement?.notes || '',
+    });
+  }, [firmName, agreement?.id]);
   const [uploading, setUploading] = useState(false);
 
   const handleSave = async () => {
