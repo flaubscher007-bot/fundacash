@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3, ScrollText } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
@@ -17,6 +17,7 @@ const navItems = [
   { path: '/drawdown/new', icon: Plus, label: 'New Draw-Down' },
   { path: '/calendar', icon: CalendarDays, label: 'Repayment Calendar' },
   { path: '/aging', icon: BarChart3, label: 'Aging Report' },
+  { path: '/agreements', icon: ScrollText, label: 'Agreements' },
 ];
 
 // Bottom nav items for mobile (keep it to 4 key items)

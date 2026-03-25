@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle, Upload, FilePlus } from 'lucide-react';
 import TransactionDocuments from '../components/TransactionDocuments';
+import InterestBreakdown from '../components/InterestBreakdown';
 import ActivityTab from '../components/ActivityTab';
 import BulkImportDrawdown from '../components/BulkImportDrawdown';
 import PaymentsTab from '../components/PaymentsTab';
@@ -347,6 +348,8 @@ export default function DrawDownForm() {
               <textarea value={form.notes} onChange={set('notes')} rows={3} className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none" placeholder="Additional notes..." />
             </div>
           </Section>
+
+          <InterestBreakdown form={form} />
 
           {!isNew && (
             <TransactionDocuments

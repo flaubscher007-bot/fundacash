@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Building2, Upload, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { Building2, Upload, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Clock, AlertTriangle, Download } from 'lucide-react';
+import { exportTransactionsCsv } from '../utils/exportCsv';
 
 const fmt = (n) => n ? `R ${Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 0 })}` : '—';
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -80,6 +81,16 @@ export default function FirmPortal() {
           <h1 className="font-space text-2xl font-bold text-foreground">{user.assigned_firm}</h1>
           <p className="text-muted-foreground text-sm">Firm Portal · {transactions.length} transactions</p>
         </div>
+      </div>
+
+      {/* Export button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => exportTransactionsCsv(transactions, `${user.assigned_firm.replace(/\s+/g, '_').toLowerCase()}_transactions.csv`)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <Download className="w-4 h-4" /> Export CSV
+        </button>
       </div>
 
       {/* Summary cards */}

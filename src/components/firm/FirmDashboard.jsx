@@ -1,12 +1,17 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { CheckCircle2, Clock, AlertTriangle, TrendingUp, Eye } from 'lucide-react';
+import { CheckCircle2, Clock, AlertTriangle, TrendingUp, Eye, Download } from 'lucide-react';
+import { exportTransactionsCsv } from '../../utils/exportCsv';
 
 const fmt = (n) => `R ${Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 0 })}`;
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 export default function FirmDashboard({ firmName, transactions, agreement }) {
+  const handleExport = () => {
+    const slug = firmName.replace(/\s+/g, '_').toLowerCase();
+    exportTransactionsCsv(transactions, `${slug}_transactions.csv`);
+  };
   const active = transactions.filter(t => t.approved !== 'CANCELLED');
 
   const stats = useMemo(() => {
@@ -83,6 +88,13 @@ export default function FirmDashboard({ firmName, transactions, agreement }) {
 
   return (
     <div className="space-y-6">
+      {/* Export button */}
+      <div className="flex justify-end">
+        <button onClick={handleExport} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <Download className="w-4 h-4" /> Export CSV
+        </button>
+      </div>
+
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Capital Advanced" value={fmt(stats.drawdown)} sub={`${active.length} transactions`} color="text-primary" />
