@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 const FIRMS = ['S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LAWYERS', 'A WOLMARANS INCORPORATED'];
 
@@ -26,16 +26,14 @@ export default function DrawDownForm() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!isNew) {
-      base44.entities.Transaction.filter({ id }).then(data => {
-        if (data[0]) setForm({ ...EMPTY, ...data[0] });
-        setLoading(false);
-      });
-    }
-  }, [id, isNew]);
-
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
+  // Settlement calculations
+  const newCapitalBalance = Number(form.new_capital_amount) || (Number(form.drawdown_amount) + Number(form.attorney_interest) || 0);
+  const amountPaid = Number(form.amount_attorney_paid) || 0;
+  const isSettled = amountPaid > 0 && amountPaid >= newCapitalBalance;
+  const shortfall = newCapitalBalance > 0 && amountPaid > 0 && amountPaid < newCapitalBalance ? newCapitalBalance - amountPaid : 0;
+  const fmt = (n) => `R ${Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const handleSave = async () => {
     setSaving(true);
@@ -90,6 +88,17 @@ export default function DrawDownForm() {
         </div>
       </div>
 
+      {/* Settlement Banner */}
+      {!isNew && isSettled && (
+        <div className="flex items-center gap-3 px-5 py-4 bg-emerald-400/10 border border-emerald-400/40 rounded-xl">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-emerald-400">SETTLED IN FULL</p>
+            <p className="text-sm text-emerald-400/80">This matter has been settled. Amount paid: {fmt(amountPaid)}</p>
+          </div>
+        </div>
+      )}
+
       {/* Form Sections */}
       <Section title="Case Details">
         <Field label="Trace No" required><input value={form.trace_no} onChange={set('trace_no')} placeholder="STE004-01234" /></Field>
@@ -143,14 +152,62 @@ export default function DrawDownForm() {
         <Field label="Attorney Interest (R)"><input type="number" value={form.attorney_interest} onChange={set('attorney_interest')} /></Field>
         <Field label="Second Payment (R)"><input type="number" value={form.second_payment} onChange={set('second_payment')} /></Field>
         <Field label="New Capital Amount (R)"><input type="number" value={form.new_capital_amount} onChange={set('new_capital_amount')} /></Field>
-        <Field label="Amount Attorney Paid (R)"><input type="number" value={form.amount_attorney_paid} onChange={set('amount_attorney_paid')} /></Field>
-        <Field label="Settlement Payment Date"><input type="date" value={form.settlement_payment_date} onChange={set('settlement_payment_date')} /></Field>
-        <Field label="Payment Status">
-          <select value={form.payment_status} onChange={set('payment_status')}>
-            {['PENDING', 'PAID', 'PARTIAL', 'OVERDUE'].map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </Field>
       </Section>
+
+      {/* Settlement Section */}
+      <div className={`border rounded-xl overflow-hidden ${
+        isSettled ? 'border-emerald-400/40 bg-emerald-400/5' : shortfall > 0 ? 'border-amber-400/40 bg-amber-400/5' : 'border-border bg-card'
+      }`}>
+        <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
+          <h2 className="font-space font-semibold text-foreground">Settlement Payment</h2>
+          {isSettled && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/15 text-emerald-400 text-xs font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5" /> SETTLED IN FULL
+            </span>
+          )}
+        </div>
+        <div className="p-6 space-y-4">
+          {/* Balance display */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 bg-background/60 border border-border rounded-lg px-4 py-3">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">New Capital Balance</p>
+              <p className="mt-0.5 text-xl font-space font-semibold text-foreground">{fmt(newCapitalBalance)}</p>
+            </div>
+            <div className="flex-1 bg-background/60 border border-border rounded-lg px-4 py-3">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Amount Paid</p>
+              <p className={`mt-0.5 text-xl font-space font-semibold ${isSettled ? 'text-emerald-400' : amountPaid > 0 ? 'text-amber-400' : 'text-foreground'}`}>{fmt(amountPaid)}</p>
+            </div>
+            {shortfall > 0 && (
+              <div className="flex-1 bg-amber-400/10 border border-amber-400/30 rounded-lg px-4 py-3">
+                <p className="text-xs text-amber-400 font-medium uppercase tracking-wide">Shortfall</p>
+                <p className="mt-0.5 text-xl font-space font-semibold text-amber-400">{fmt(shortfall)}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Alert */}
+          {shortfall > 0 && (
+            <div className="flex items-start gap-3 px-4 py-3 bg-amber-400/10 border border-amber-400/30 rounded-lg">
+              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-300">
+                <span className="font-semibold">Payment is less than the New Capital Balance.</span> The outstanding shortfall is <span className="font-semibold">{fmt(shortfall)}</span>. This matter is not yet fully settled.
+              </p>
+            </div>
+          )}
+
+          {/* Input fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Amount Attorney Paid (R)"><input type="number" value={form.amount_attorney_paid} onChange={set('amount_attorney_paid')} /></Field>
+            <Field label="Settlement Payment Date"><input type="date" value={form.settlement_payment_date} onChange={set('settlement_payment_date')} /></Field>
+            <Field label="Payment Status">
+              <select value={form.payment_status} onChange={set('payment_status')}>
+                {['PENDING', 'PAID', 'PARTIAL', 'OVERDUE'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </Field>
+            <Field label="Drawdown Payment Date"><input type="date" value={form.drawdown_payment_date} onChange={set('drawdown_payment_date')} /></Field>
+          </div>
+        </div>
+      </div>
 
       <Section title="Notes">
         <div className="col-span-2">
