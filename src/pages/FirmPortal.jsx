@@ -215,6 +215,55 @@ export default function FirmPortal() {
   );
 }
 
+function UploadProofForm({ txn, isUploading, onUpload }) {
+  const [amount, setAmount] = useState('');
+  const [file, setFile] = useState(null);
+
+  const handleSubmit = () => {
+    if (!file) return;
+    onUpload(txn, file, amount);
+    setFile(null);
+    setAmount('');
+  };
+
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-3">
+      <p className="text-sm font-semibold text-foreground">Upload Proof of Payment</p>
+      <p className="text-xs text-muted-foreground">Your proof will be submitted for admin review before being applied to your balance.</p>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <label className="text-xs text-muted-foreground font-medium block mb-1">Payment Amount (R)</label>
+          <input
+            type="number"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="e.g. 15000"
+            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="text-xs text-muted-foreground font-medium block mb-1">Proof Document</label>
+          <label className={`flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Upload className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{file ? file.name : 'Choose PDF / JPG / PNG'}</span>
+            <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files[0] || null)} />
+          </label>
+        </div>
+      </div>
+      {file && (
+        <button
+          onClick={handleSubmit}
+          disabled={isUploading}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+        >
+          <Upload className="w-4 h-4" />
+          {isUploading ? 'Uploading...' : 'Submit for Review'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function PayStatusBadge({ status }) {
   const map = {
     'PAID': 'bg-emerald-400/15 text-emerald-400',
