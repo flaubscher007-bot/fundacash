@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Users, Search, Edit2, Save, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Search, Edit2, Save, X, ChevronDown, ChevronUp, Send, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 const FIRMS = [
   'S STEYN INCORPORATED',
@@ -30,6 +31,10 @@ export default function UserManagement() {
   const [expandedId, setExpandedId] = useState(null);
   const [editForms, setEditForms] = useState({});
   const [saving, setSaving] = useState({});
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     base44.entities.User.list('-created_date', 500).then(data => {
@@ -73,6 +78,25 @@ export default function UserManagement() {
     setExpandedId(null);
   };
 
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) {
+      toast.error('Please enter an email address');
+      return;
+    }
+    setInviting(true);
+    try {
+      await base44.users.inviteUser(inviteEmail.trim(), inviteRole);
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+      setInviteRole('user');
+      setShowInviteForm(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
   if (loading)
     return (
       <div className="flex items-center justify-center h-64">
@@ -89,6 +113,61 @@ export default function UserManagement() {
           <h1 className="font-space text-2xl font-bold text-foreground">User Management</h1>
         </div>
         <p className="text-muted-foreground text-sm">Assign firm roles, permissions, and account status for all users.</p>
+      </div>
+
+      {/* Invite Section */}
+      <div className="bg-primary/10 border border-primary/20 rounded-xl p-5">
+        {!showInviteForm ? (
+          <button
+            onClick={() => setShowInviteForm(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Send className="w-4 h-4" />
+            Invite New User
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-foreground">Send invitation by email</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="email"
+                placeholder="user@example.com"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleInvite()}
+                className="bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              <select
+                value={inviteRole}
+                onChange={e => setInviteRole(e.target.value)}
+                className="bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={handleInvite}
+                disabled={inviting}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                <Send className="w-4 h-4" />
+                {inviting ? 'Sending...' : 'Send Invite'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowInviteForm(false);
+                  setInviteEmail('');
+                  setInviteRole('user');
+                }}
+                className="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search */}
