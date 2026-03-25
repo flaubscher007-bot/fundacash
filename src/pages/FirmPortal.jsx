@@ -192,15 +192,21 @@ export default function FirmPortal() {
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Uploaded Documents</p>
                         <div className="space-y-1.5">
-                          {txnDocs.map(doc => (
-                            <div key={doc.id} className="flex items-center gap-3 bg-card border border-border/60 rounded-lg px-3 py-2">
-                              <span className="text-xs text-foreground flex-1 truncate">{doc.file_name}</span>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">{fmtDate(doc.upload_date)}</span>
-                              <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            </div>
-                          ))}
+                          {txnDocs.map(doc => {
+                              const rs = doc.review_status || 'PENDING_REVIEW';
+                              const rsStyle = { PENDING_REVIEW: 'text-amber-400', APPROVED: 'text-emerald-400', REJECTED: 'text-red-400' }[rs];
+                              return (
+                                <div key={doc.id} className="flex items-center gap-3 bg-card border border-border/60 rounded-lg px-3 py-2">
+                                  <span className="text-xs text-foreground flex-1 truncate">{doc.file_name}</span>
+                                  <span className={`text-xs font-medium whitespace-nowrap ${rsStyle}`}>{rs.replace('_', ' ')}</span>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">{fmtDate(doc.upload_date)}</span>
+                                  {doc.admin_comments && <span className="text-xs text-muted-foreground italic truncate max-w-[100px]" title={doc.admin_comments}>"{doc.admin_comments}"</span>}
+                                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     )}
