@@ -40,7 +40,16 @@ export default function DrawDownForm() {
     }
   }, [id]);
 
-  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    const value = e.target.value;
+    setForm(f => {
+      const updated = { ...f, [field]: value };
+      if (field === 'total_invoiced' && value !== '') {
+        updated.drawdown_amount = (Number(value) * 0.5).toFixed(2);
+      }
+      return updated;
+    });
+  };
 
   const newCapitalBalance = Number(form.new_capital_amount) || (Number(form.drawdown_amount) + Number(form.funda_interest) || 0);
   const amountPaid = Number(form.amount_attorney_paid) || 0;
