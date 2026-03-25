@@ -32,13 +32,8 @@ Deno.serve(async (req) => {
     const ag = agreementMap[txn.law_firm];
     if (!ag) { skipped++; continue; }
 
-    // Determine the interest start date
-    let startDateStr = txn.attorney_interest_start_date;
-    if (!startDateStr) {
-      if (ag.interest_start_trigger === 'drawdown_date') startDateStr = txn.drawdown_date;
-      else if (ag.interest_start_trigger === 'invoice_date') startDateStr = txn.invoice_date;
-      else if (ag.interest_start_trigger === 'assessment_date') startDateStr = txn.date_of_assessment;
-    }
+    // Interest always starts from the draw-down date (when amount hits Fundamedical's account)
+    const startDateStr = txn.drawdown_date;
 
     if (!startDateStr || !txn.drawdown_amount) { skipped++; continue; }
 
