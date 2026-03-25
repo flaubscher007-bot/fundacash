@@ -64,7 +64,7 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="font-space text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Medical Legal Funding Overview — {transactions.length.toLocaleString()} total transactions</p>
+        <p className="text-muted-foreground mt-1">Medical Legal Funding Overview — {transactions.length.toLocaleString()} transactions</p>
       </div>
 
       {/* Stats */}
