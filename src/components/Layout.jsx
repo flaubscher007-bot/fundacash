@@ -2,7 +2,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
   { label: 'S Steyn Inc', slug: 'ssteyn' },
