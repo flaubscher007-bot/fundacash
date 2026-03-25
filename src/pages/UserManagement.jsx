@@ -35,6 +35,10 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [inviting, setInviting] = useState(false);
+  const [isFundaStaff, setIsFundaStaff] = useState(false);
+  const [selectedFirm, setSelectedFirm] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     base44.entities.User.list('-created_date', 500).then(data => {
@@ -78,23 +82,53 @@ export default function UserManagement() {
     setExpandedId(null);
   };
 
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    return pwd;
+  };
+
   const handleInvite = async () => {
     if (!inviteEmail.trim()) {
       toast.error('Please enter an email address');
       return;
     }
+    if (inviteRole === 'user' && !isFundaStaff && !selectedFirm) {
+      toast.error('Please select a law firm');
+      return;
+    }
     setInviting(true);
     try {
       await base44.users.inviteUser(inviteEmail.trim(), inviteRole);
-      toast.success(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail('');
-      setInviteRole('user');
-      setShowInviteForm(false);
+      if (inviteRole === 'user' && !isFundaStaff) {
+        const pwd = generateTempPassword();
+        setTempPassword(pwd);
+        setShowPasswordModal(true);
+      } else {
+        toast.success(`Invitation sent to ${inviteEmail}`);
+        setInviteEmail('');
+        setInviteRole('user');
+        setSelectedFirm('');
+        setIsFundaStaff(false);
+        setShowInviteForm(false);
+      }
     } catch (err) {
       toast.error(err.message || 'Failed to send invitation');
     } finally {
       setInviting(false);
     }
+  };
+
+  const handlePasswordCopied = () => {
+    navigator.clipboard.writeText(`Email: ${inviteEmail}\nPassword: ${tempPassword}`);
+    toast.success('Login details copied to clipboard');
+    setShowPasswordModal(false);
+    setInviteEmail('');
+    setInviteRole('user');
+    setSelectedFirm('');
+    setIsFundaStaff(false);
+    setShowInviteForm(false);
   };
 
   if (loading)
@@ -126,15 +160,16 @@ export default function UserManagement() {
             Invite New User
           </button>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm font-medium text-foreground">Send invitation by email</p>
+            
+            {/* Email & Role */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 type="email"
                 placeholder="user@example.com"
                 value={inviteEmail}
                 onChange={e => setInviteEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleInvite()}
                 className="bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <select
@@ -146,6 +181,56 @@ export default function UserManagement() {
                 <option value="admin">Admin</option>
               </select>
             </div>
+
+            {/* User Type (shown if role is user) */}
+            {inviteRole === 'user' && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">User Type</p>
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-muted/20 transition-colors" style={{borderColor: !isFundaStaff ? 'hsl(101, 48%, 52%)' : undefined}}>
+                    <input
+                      type="radio"
+                      name="userType"
+                      checked={!isFundaStaff}
+                      onChange={() => setIsFundaStaff(false)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-foreground">Law Firm User</span>
+                  </label>
+                  <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-muted/20 transition-colors" style={{borderColor: isFundaStaff ? 'hsl(101, 48%, 52%)' : undefined}}>
+                    <input
+                      type="radio"
+                      name="userType"
+                      checked={isFundaStaff}
+                      onChange={() => setIsFundaStaff(true)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-foreground">Funda Staff (Microsoft)</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Firm Selection (shown if law firm user) */}
+            {inviteRole === 'user' && !isFundaStaff && (
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">Assign to Law Firm</label>
+                <select
+                  value={selectedFirm}
+                  onChange={e => setSelectedFirm(e.target.value)}
+                  className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option value="">Select a firm...</option>
+                  {FIRMS.map(f => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Buttons */}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleInvite}
@@ -160,6 +245,8 @@ export default function UserManagement() {
                   setShowInviteForm(false);
                   setInviteEmail('');
                   setInviteRole('user');
+                  setSelectedFirm('');
+                  setIsFundaStaff(false);
                 }}
                 className="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -169,6 +256,34 @@ export default function UserManagement() {
           </div>
         )}
       </div>
+
+      {/* Temporary Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+          <div className="bg-card border border-border rounded-xl p-6 max-w-sm space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">Invitation Sent</p>
+              <p className="text-xs text-muted-foreground">Share these temporary login details with the user. They will be asked to create a new password on first login.</p>
+            </div>
+            <div className="space-y-2 bg-muted/20 border border-border rounded-lg p-4">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Email</p>
+                <p className="text-sm font-mono text-foreground break-all">{inviteEmail}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Temporary Password</p>
+                <p className="text-sm font-mono text-primary font-semibold break-all">{tempPassword}</p>
+              </div>
+            </div>
+            <button
+              onClick={handlePasswordCopied}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Copy & Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">
