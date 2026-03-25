@@ -24,6 +24,7 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
       funda_interest_rate: Number(form.funda_interest_rate) || null,
       attorney_interest_rate: Number(form.attorney_interest_rate) || null,
       payment_terms_days: Number(form.payment_terms_days) || null,
+      interest_start_trigger: 'drawdown_date',
     };
     let saved;
     if (agreement?.id) {
