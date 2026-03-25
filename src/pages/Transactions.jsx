@@ -187,6 +187,26 @@ export default function Transactions() {
   );
 }
 
+function ApproveButton({ txn, onApproved }) {
+  const [loading, setLoading] = useState(false);
+  const handleApprove = async () => {
+    setLoading(true);
+    await base44.entities.Transaction.update(txn.id, { approved: 'YES' });
+    onApproved(txn.id);
+    setLoading(false);
+  };
+  return (
+    <button
+      onClick={handleApprove}
+      disabled={loading}
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-400/15 text-emerald-400 hover:bg-emerald-400/25 text-xs font-semibold transition-colors disabled:opacity-60 whitespace-nowrap"
+    >
+      <CheckCircle2 className="w-3 h-3" />
+      {loading ? 'Approving...' : 'Approve'}
+    </button>
+  );
+}
+
 function FilterSelect({ value, options, onChange }) {
   return (
     <select
