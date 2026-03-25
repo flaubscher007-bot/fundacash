@@ -57,16 +57,26 @@ Deno.serve(async (req) => {
     if (daysElapsed <= 0) { skipped++; continue; }
 
     const principal = txn.drawdown_amount;
-    const rate = ag.annual_interest_rate / 100;
     const divisor = ag.interest_basis === '30/360' ? 360 : ag.interest_basis === 'Actual/360' ? 360 : 365;
 
-    const interestAccrued = parseFloat((principal * rate / divisor * daysElapsed).toFixed(2));
+    // Fundamedical interest portion (forms the New Capital Balance with drawdown)
+    const fundaRate = (ag.funda_interest_rate || 0) / 100;
+    const fundaInterest = parseFloat((principal * fundaRate / divisor * daysElapsed).toFixed(2));
 
-    // Only update if value has changed meaningfully
-    if (Math.abs((txn.attorney_interest || 0) - interestAccrued) > 0.01) {
-      await base44.asServiceRole.entities.Transaction.update(txn.id, {
-        attorney_interest: interestAccrued,
-      });
+    // Law firm interest portion
+    const attorneyRate = (ag.attorney_interest_rate || 0) / 100;
+    const attorneyInterest = parseFloat((principal * attorneyRate / divisor * daysElapsed).toFixed(2));
+
+    const fundaChanged = Math.abs((txn.funda_interest || 0) - fundaInterest) > 0.01;
+    const attorneyChanged = Math.abs((txn.attorney_interest || 0) - attorneyInterest) > 0.01;
+
+    if (fundaChanged || attorneyChanged) {
+      const updatePayload = {};
+      if (fundaChanged) updatePayload.funda_interest = fundaInterest;
+      if (attorneyChanged) updatePayload.attorney_interest = attorneyInterest;
+      // New Capital Balance = drawdown + funda interest
+      updatePayload.new_capital_amount = parseFloat((principal + fundaInterest).toFixed(2));
+      await base44.asServiceRole.entities.Transaction.update(txn.id, updatePayload);
       updated++;
     } else {
       skipped++;

@@ -29,7 +29,8 @@ export default function DrawDownForm() {
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
 
   // Settlement calculations
-  const newCapitalBalance = Number(form.new_capital_amount) || (Number(form.drawdown_amount) + Number(form.attorney_interest) || 0);
+  // New Capital Balance = Drawdown Amount + Fundamedical Interest
+  const newCapitalBalance = Number(form.new_capital_amount) || (Number(form.drawdown_amount) + Number(form.funda_interest) || 0);
   const amountPaid = Number(form.amount_attorney_paid) || 0;
   const isSettled = amountPaid > 0 && amountPaid >= newCapitalBalance;
   const shortfall = newCapitalBalance > 0 && amountPaid > 0 && amountPaid < newCapitalBalance ? newCapitalBalance - amountPaid : 0;
@@ -148,10 +149,16 @@ export default function DrawDownForm() {
 
       <Section title="Interest & Repayment">
         <Field label="Interest Start Date"><input type="date" value={form.attorney_interest_start_date} onChange={set('attorney_interest_start_date')} /></Field>
-        <Field label="Funda Interest (R)"><input type="number" value={form.funda_interest} onChange={set('funda_interest')} /></Field>
-        <Field label="Attorney Interest (R)"><input type="number" value={form.attorney_interest} onChange={set('attorney_interest')} /></Field>
+        <Field label="Fundamedical Interest (R)" required>
+          <input type="number" value={form.funda_interest} onChange={set('funda_interest')} />
+        </Field>
+        <Field label="Law Firm Interest (R)">
+          <input type="number" value={form.attorney_interest} onChange={set('attorney_interest')} />
+        </Field>
         <Field label="Second Payment (R)"><input type="number" value={form.second_payment} onChange={set('second_payment')} /></Field>
-        <Field label="New Capital Amount (R)"><input type="number" value={form.new_capital_amount} onChange={set('new_capital_amount')} /></Field>
+        <Field label="New Capital Amount (R)">
+          <input type="number" value={form.new_capital_amount} onChange={set('new_capital_amount')} placeholder={`Auto: ${(Number(form.drawdown_amount || 0) + Number(form.funda_interest || 0)).toFixed(2)}`} />
+        </Field>
       </Section>
 
       {/* Settlement Section */}

@@ -6,7 +6,8 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-ZA') : '—';
 
 export default function AgreementsTab({ firmName, agreement, onSaved, documents, onDocumentAdded, onDocumentDeleted }) {
   const [form, setForm] = useState({
-    annual_interest_rate: agreement?.annual_interest_rate || '',
+    funda_interest_rate: agreement?.funda_interest_rate || '',
+    attorney_interest_rate: agreement?.attorney_interest_rate || '',
     interest_basis: agreement?.interest_basis || '365 days',
     interest_start_trigger: agreement?.interest_start_trigger || 'drawdown_date',
     payment_terms_days: agreement?.payment_terms_days || '',
@@ -21,7 +22,8 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
     const data = {
       ...form,
       firm_name: firmName,
-      annual_interest_rate: Number(form.annual_interest_rate),
+      funda_interest_rate: Number(form.funda_interest_rate) || null,
+      attorney_interest_rate: Number(form.attorney_interest_rate) || null,
       payment_terms_days: Number(form.payment_terms_days) || null,
     };
     let saved;
@@ -69,8 +71,11 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
         <h3 className="font-space font-semibold text-foreground">Interest & Payment Terms</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Field label="Annual Interest Rate (%)">
-            <input type="number" step="0.01" {...f('annual_interest_rate')} className={inputCls} />
+          <Field label="Fundamedical Interest Rate (% p.a.)">
+            <input type="number" step="0.01" {...f('funda_interest_rate')} className={inputCls} placeholder="e.g. 18" />
+          </Field>
+          <Field label="Law Firm Interest Rate (% p.a.)">
+            <input type="number" step="0.01" {...f('attorney_interest_rate')} className={inputCls} placeholder="e.g. 5" />
           </Field>
           <Field label="Interest Basis">
             <select {...f('interest_basis')} className={inputCls}>
