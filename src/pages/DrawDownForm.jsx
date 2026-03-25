@@ -176,7 +176,7 @@ export default function DrawDownForm() {
       {/* Tab navigation (edit mode only) */}
       {!isNew && mode === 'single' && (
         <div className="flex border-b border-border gap-0">
-          {[['details','Details'], ['activity','Activity']].map(([tab, label]) => (
+          {[['details','Details'], ['payments','Payments'], ['activity','Activity']].map(([tab, label]) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

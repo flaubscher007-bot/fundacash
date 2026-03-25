@@ -69,13 +69,12 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard title="Total Draw-Downs" value={fmt(totalDrawdown)} icon={TrendingUp} color="primary" />
-        <StatCard title="Total Invoiced" value={fmt(totalInvoiced)} icon={DollarSign} color="blue" />
-        <StatCard title="Total Repaid" value={fmt(totalPaid)} icon={CheckCircle} color="green" />
-        <StatCard title="Interest Accrued" value={fmt(totalInterest)} icon={Clock} color="amber" />
-        <StatCard title="Active Transactions" value={activeCount.toLocaleString()} icon={FileText} color="primary" />
-        <StatCard title="Awaiting Payment" value={pendingPayment.toLocaleString()} icon={Building2} color="red" />
+        <StatCard title="Funda Interest" value={fmt(totalFundaInterest)} icon={Clock} color="amber" />
+        <StatCard title="New Capital Balance" value={fmt(totalNewCapital)} icon={DollarSign} color="blue" />
+        <StatCard title="Attorney Interest" value={fmt(totalAttorneyInterest)} icon={Building2} color="red" />
+        <StatCard title="Total Settled" value={fmt(totalSettled)} icon={CheckCircle} color="green" />
       </div>
 
       {/* Firm Exposure Chart */}
