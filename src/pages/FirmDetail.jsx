@@ -16,7 +16,7 @@ const FIRM_MAP = {
   'wolmarans': 'A WOLMARANS INCORPORATED',
 };
 
-const TABS = ['Dashboard', 'Agreements', 'Client Folders', 'Monthly Statement'];
+const TABS = ['Dashboard', 'Payments', 'Agreements', 'Client Folders', 'Monthly Statement'];
 
 export default function FirmDetail() {
   const { slug } = useParams();
