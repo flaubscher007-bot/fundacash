@@ -33,6 +33,9 @@ Deno.serve(async (req) => {
     if (!ag) { skipped++; continue; }
 
     // Interest always starts from the draw-down date (when amount hits Fundamedical's account)
+    // Only calculate interest for approved transactions
+    if (txn.approved !== 'YES') { skipped++; continue; }
+
     const startDateStr = txn.drawdown_date;
 
     if (!startDateStr || !txn.drawdown_amount) { skipped++; continue; }

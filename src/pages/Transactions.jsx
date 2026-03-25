@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, Filter, Download, Plus, ChevronUp, ChevronDown, Eye } from 'lucide-react';
+import { Search, Plus, ChevronUp, ChevronDown, Eye, CheckCircle2, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FIRMS = ['All', 'S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LAWYERS', 'A WOLMARANS INCORPORATED'];
@@ -128,6 +128,7 @@ export default function Transactions() {
                   { label: 'Interest Start', field: 'attorney_interest_start_date' },
                   { label: 'Amount Paid', field: 'amount_attorney_paid' },
                   { label: 'Status', field: 'approved' },
+                  { label: 'Approve', field: null },
                   { label: '', field: null },
                 ].map(({ label, field }) => (
                   <th key={label} className="text-left px-4 py-3 text-muted-foreground font-medium text-xs uppercase tracking-wide whitespace-nowrap">
@@ -153,12 +154,17 @@ export default function Transactions() {
                   <td className="px-4 py-3 text-right text-foreground whitespace-nowrap">{fmt(t.amount_attorney_paid)}</td>
                   <td className="px-4 py-3"><StatusBadge status={t.approved} /></td>
                   <td className="px-4 py-3">
+                    {t.approved === 'PENDING' && (
+                      <ApproveButton txn={t} onApproved={(id) => setTransactions(prev => prev.map(x => x.id === id ? { ...x, approved: 'YES' } : x))} />
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     <Link to={`/drawdown/${t.id}`} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors inline-flex">
                       <Eye className="w-3.5 h-3.5" />
                     </Link>
                   </td>
-                </tr>
-              ))}
+                  </tr>
+                  ))}
               {paginated.length === 0 && (
                 <tr><td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">No transactions found</td></tr>
               )}
