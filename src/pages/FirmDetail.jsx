@@ -15,13 +15,13 @@ const FIRM_MAP = {
   'wolmarans': 'A WOLMARANS INCORPORATED',
 };
 
-const TABS = ['Agreements', 'Client Folders', 'Monthly Statement'];
+const TABS = ['Dashboard', 'Agreements', 'Client Folders', 'Monthly Statement'];
 
 export default function FirmDetail() {
   const { slug } = useParams();
   const firmName = FIRM_MAP[slug];
 
-  const [tab, setTab] = useState('Agreements');
+  const [tab, setTab] = useState('Dashboard');
   const [transactions, setTransactions] = useState([]);
   const [agreement, setAgreement] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -119,6 +119,13 @@ export default function FirmDetail() {
         </div>
       ) : (
         <>
+          {tab === 'Dashboard' && (
+            <FirmDashboard
+              firmName={firmName}
+              transactions={transactions}
+              agreement={agreement}
+            />
+          )}
           {tab === 'Agreements' && (
             <AgreementsTab
               firmName={firmName}
