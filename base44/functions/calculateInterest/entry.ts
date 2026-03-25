@@ -52,15 +52,13 @@ Deno.serve(async (req) => {
     if (daysElapsed <= 0) { skipped++; continue; }
 
     const principal = txn.drawdown_amount;
-    const divisor = ag.interest_basis === '30/360' ? 360 : ag.interest_basis === 'Actual/360' ? 360 : 365;
 
-    // Fundamedical interest portion (forms the New Capital Balance with drawdown)
+    // Monthly simple interest: principal × annual_rate / 12
     const fundaRate = (ag.funda_interest_rate || 0) / 100;
-    const fundaInterest = parseFloat((principal * fundaRate / divisor * daysElapsed).toFixed(2));
+    const fundaInterest = parseFloat((principal * fundaRate / 12).toFixed(2));
 
-    // Law firm interest portion
     const attorneyRate = (ag.attorney_interest_rate || 0) / 100;
-    const attorneyInterest = parseFloat((principal * attorneyRate / divisor * daysElapsed).toFixed(2));
+    const attorneyInterest = parseFloat((principal * attorneyRate / 12).toFixed(2));
 
     const fundaChanged = Math.abs((txn.funda_interest || 0) - fundaInterest) > 0.01;
     const attorneyChanged = Math.abs((txn.attorney_interest || 0) - attorneyInterest) > 0.01;
@@ -76,7 +74,7 @@ Deno.serve(async (req) => {
         transaction_id: txn.id,
         trace_no: txn.trace_no,
         action: 'interest_calculated',
-        description: `Nightly interest update: ${daysElapsed} days elapsed`,
+        description: `Monthly interest update (per month basis)`,
         changes: auditChanges,
         timestamp: new Date().toISOString(),
       });
