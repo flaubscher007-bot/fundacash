@@ -56,6 +56,25 @@ export default function FirmDashboard({ firmName, transactions, agreement }) {
     return Object.values(map).sort((a, b) => a.draw.localeCompare(b.draw));
   }, [active]);
 
+  // Projected repayments based on payment terms
+  const projected = useMemo(() => {
+    if (!agreement?.payment_terms_days) return null;
+    const termsDays = agreement.payment_terms_days;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const buckets = { d30: 0, d60: 0, d90: 0, d30count: 0, d60count: 0, d90count: 0 };
+    for (const t of active) {
+      if (!t.drawdown_date || !t.drawdown_amount || t.payment_status === 'PAID' || t.approved !== 'YES') continue;
+      const due = new Date(t.drawdown_date);
+      due.setDate(due.getDate() + termsDays);
+      const daysUntilDue = Math.floor((due - today) / (1000 * 60 * 60 * 24));
+      const outstanding = Math.max(0, (Number(t.new_capital_amount) || (Number(t.drawdown_amount) + Number(t.funda_interest || 0))) - (t.amount_attorney_paid || 0));
+      if (daysUntilDue >= 0 && daysUntilDue <= 30)  { buckets.d30 += outstanding; buckets.d30count++; }
+      if (daysUntilDue >= 0 && daysUntilDue <= 60)  { buckets.d60 += outstanding; buckets.d60count++; }
+      if (daysUntilDue >= 0 && daysUntilDue <= 90)  { buckets.d90 += outstanding; buckets.d90count++; }
+    }
+    return buckets;
+  }, [active, agreement]);
+
   // Recent unpaid transactions
   const unpaid = active
     .filter(t => t.payment_status !== 'PAID' && t.drawdown_amount > 0)
@@ -118,6 +137,33 @@ export default function FirmDashboard({ firmName, transactions, agreement }) {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Projected Repayments */}
+      {projected ? (
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-space font-semibold text-foreground text-sm">Projected Repayments</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Based on {agreement.payment_terms_days}-day payment terms · outstanding approved drawdowns</p>
+          </div>
+          <div className="grid grid-cols-3 divide-x divide-border">
+            {[
+              { label: 'Next 30 Days', amount: projected.d30, count: projected.d30count, color: 'text-emerald-400', bg: 'bg-emerald-400/5' },
+              { label: 'Next 60 Days', amount: projected.d60, count: projected.d60count, color: 'text-amber-400', bg: 'bg-amber-400/5' },
+              { label: 'Next 90 Days', amount: projected.d90, count: projected.d90count, color: 'text-blue-400', bg: 'bg-blue-400/5' },
+            ].map(({ label, amount, count, color, bg }) => (
+              <div key={label} className={`px-5 py-5 ${bg}`}>
+                <p className="text-xs text-muted-foreground font-medium">{label}</p>
+                <p className={`mt-1.5 text-2xl font-space font-bold ${color}`}>{fmt(amount)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{count} transaction{count !== 1 ? 's' : ''} due</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : agreement === null ? (
+        <div className="px-5 py-4 bg-card border border-border rounded-xl text-xs text-muted-foreground">
+          ⚠ No agreement configured — set payment terms in the Agreements tab to enable projected repayments.
+        </div>
+      ) : null}
 
       {/* Unpaid transactions */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
