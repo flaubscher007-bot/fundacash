@@ -30,6 +30,24 @@ export default function DrawDownForm() {
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState('');
+  const [forceSubmit, setForceSubmit] = useState(false);
+
+  // Auto-generate next trace_no for the selected law firm
+  useEffect(() => {
+    if (!isNew) return;
+    base44.entities.Transaction.filter({ law_firm: form.law_firm }, '-created_date', 500).then(txns => {
+      let maxNum = 0, prefix = '';
+      for (const t of txns) {
+        const m = t.trace_no?.match(/^(.*?)(\d+)$/);
+        if (m) { const n = parseInt(m[2]); if (n > maxNum) { maxNum = n; prefix = m[1]; } }
+      }
+      if (prefix || maxNum > 0) {
+        const nextNum = String(maxNum + 1).padStart(String(maxNum).length, '0');
+        setForm(f => ({ ...f, trace_no: `${prefix}${nextNum}` }));
+      }
+    });
+  }, [form.law_firm, isNew]);
 
   useEffect(() => {
     if (!isNew) {
@@ -57,12 +75,24 @@ export default function DrawDownForm() {
   const shortfall = newCapitalBalance > 0 && amountPaid > 0 && amountPaid < newCapitalBalance ? newCapitalBalance - amountPaid : 0;
   const fmt = (n) => `R ${Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const handleSave = async () => {
+  const handleSave = async (force = false) => {
+    // Duplicate check for new transactions
+    if (isNew && !force) {
+      const existing = await base44.entities.Transaction.filter({ law_firm: form.law_firm }, '-created_date', 2000);
+      const dup = existing.find(t =>
+        t.client_name?.toLowerCase().trim() === form.client_name?.toLowerCase().trim() &&
+        t.expert_name?.toLowerCase().trim() === form.expert_name?.toLowerCase().trim() &&
+        t.product?.toLowerCase().trim() === form.product?.toLowerCase().trim() &&
+        t.client_name && t.expert_name && t.product
+      );
+      if (dup) {
+        setDuplicateWarning(`Possible duplicate: a transaction for "${dup.client_name}" with expert "${dup.expert_name}" and product "${dup.product}" already exists (${dup.trace_no}).`);
+        return;
+      }
+    }
+    setDuplicateWarning('');
     setSaving(true);
     const payload = { ...form };
-    ['potential_drawdown','budget_amount','drawdown_amount','total_invoiced','second_payment','attorney_interest','funda_interest','amount_attorney_paid','new_capital_amount'].forEach(k => {
-      if (payload[k] !== '' && payload[k] !== null) payload[k] = Number(payload[k]) || 0;
-    });
     if (isNew) {
       const created = await base44.entities.Transaction.create(payload);
       await base44.functions.invoke('logAuditEvent', {
@@ -162,6 +192,21 @@ export default function DrawDownForm() {
         <div className="bg-card border border-border rounded-xl p-6">
           <h2 className="font-space font-semibold text-foreground mb-4">Activity History</h2>
           <ActivityTab transactionId={id} />
+        </div>
+      )}
+
+      {/* Duplicate warning */}
+      {duplicateWarning && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-amber-400/10 border border-amber-400/30 rounded-xl">
+          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-amber-300 font-medium">Possible Duplicate Detected</p>
+            <p className="text-sm text-amber-300/80 mt-0.5">{duplicateWarning}</p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <button onClick={() => setDuplicateWarning('')} className="text-xs px-3 py-1.5 rounded border border-border text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+            <button onClick={() => handleSave(true)} className="text-xs px-3 py-1.5 rounded bg-amber-400 text-black font-semibold hover:bg-amber-300 transition-colors">Save Anyway</button>
+          </div>
         </div>
       )}
 
