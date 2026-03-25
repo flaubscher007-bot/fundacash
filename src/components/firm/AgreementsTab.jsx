@@ -83,13 +83,6 @@ export default function AgreementsTab({ firmName, agreement, onSaved, documents,
               <option>Actual/360</option>
             </select>
           </Field>
-          <Field label="Interest Starts From">
-            <select {...f('interest_start_trigger')} className={inputCls}>
-              <option value="drawdown_date">Draw-Down Date</option>
-              <option value="invoice_date">Invoice Date</option>
-              <option value="assessment_date">Assessment Date</option>
-            </select>
-          </Field>
           <Field label="Payment Terms (days)">
             <input type="number" {...f('payment_terms_days')} className={inputCls} />
           </Field>
