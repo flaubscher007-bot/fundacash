@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle, Upload, FilePlus } from 'lucide-react';
+import DocumentGenerator from '../components/DocumentGenerator';
 import TransactionDocuments from '../components/TransactionDocuments';
 import InterestBreakdown from '../components/InterestBreakdown';
 import ActivityTab from '../components/ActivityTab';
@@ -352,12 +353,15 @@ export default function DrawDownForm() {
           <InterestBreakdown form={form} />
 
           {!isNew && (
-            <TransactionDocuments
-              transactionId={id}
-              firmName={form.law_firm}
-              traceNo={form.trace_no}
-              clientName={form.client_name}
-            />
+            <>
+              <DocumentGenerator transactionId={id} traceNo={form.trace_no} />
+              <TransactionDocuments
+                transactionId={id}
+                firmName={form.law_firm}
+                traceNo={form.trace_no}
+                clientName={form.client_name}
+              />
+            </>
           )}
         </>
       )}
