@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, FileText, Plus, Menu, TrendingUp, Building2, LogOut, CalendarDays, BarChart3 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { base44 } from '@/api/base44Client';
 
 const FIRMS = [
@@ -30,6 +31,13 @@ const mobileNavItems = [
 export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(u => setUserRole(u?.role)).catch(() => {});
+  }, []);
+
+  const isFirmUser = userRole === 'firm_user';
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -55,24 +63,39 @@ export default function Layout() {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ path, icon: Icon, label }) => {
-            const active = location.pathname === path;
-            return (
-              <Link
-                key={path}
-                to={path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                }`}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
-              </Link>
-            );
-          })}
+          {isFirmUser ? (
+            <Link
+              to="/portal"
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                location.pathname === '/portal'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              }`}
+            >
+              <Building2 className="w-4 h-4 flex-shrink-0" />
+              My Firm Portal
+            </Link>
+          ) : (
+            navItems.map(({ path, icon: Icon, label }) => {
+              const active = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {label}
+                </Link>
+              );
+            })
+          )}
         </nav>
 
         {/* Law Firms */}

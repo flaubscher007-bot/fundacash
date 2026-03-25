@@ -12,6 +12,7 @@ import DrawDownForm from './pages/DrawDownForm';
 import FirmDetail from './pages/FirmDetail';
 import RepaymentCalendar from './pages/RepaymentCalendar';
 import AgingReport from './pages/AgingReport';
+import FirmPortal from './pages/FirmPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/firm/:slug" element={<FirmDetail />} />
         <Route path="/calendar" element={<RepaymentCalendar />} />
         <Route path="/aging" element={<AgingReport />} />
+        <Route path="/portal" element={<FirmPortal />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
