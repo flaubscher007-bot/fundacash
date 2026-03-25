@@ -6,6 +6,7 @@ import AgreementsTab from '../components/firm/AgreementsTab';
 import ClientFoldersTab from '../components/firm/ClientFoldersTab';
 import StatementTab from '../components/firm/StatementTab';
 import FirmDashboard from '../components/firm/FirmDashboard';
+import FirmPaymentsTab from '../components/firm/FirmPaymentsTab';
 
 const FIRM_MAP = {
   'lhl': 'LHL ATTORNEYS',
