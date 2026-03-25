@@ -23,9 +23,13 @@ export default function Dashboard() {
   }, []);
 
   const totalDrawdown = transactions.reduce((s, t) => s + (t.drawdown_amount || 0), 0);
-  const totalInvoiced = transactions.reduce((s, t) => s + (t.total_invoiced || 0), 0);
-  const totalInterest = transactions.reduce((s, t) => s + (t.attorney_interest || 0) + (t.funda_interest || 0), 0);
-  const totalPaid = transactions.reduce((s, t) => s + (t.amount_attorney_paid || 0), 0);
+  const totalFundaInterest = transactions.reduce((s, t) => s + (t.funda_interest || 0), 0);
+  const totalAttorneyInterest = transactions.reduce((s, t) => s + (t.attorney_interest || 0), 0);
+  const totalNewCapital = transactions.reduce((s, t) => {
+    const nc = Number(t.new_capital_amount) || (Number(t.drawdown_amount || 0) + Number(t.funda_interest || 0));
+    return s + nc;
+  }, 0);
+  const totalSettled = transactions.filter(t => t.payment_status === 'PAID').reduce((s, t) => s + (t.amount_attorney_paid || 0), 0);
   const activeCount = transactions.filter(t => t.approved !== 'CANCELLED').length;
   const pendingPayment = transactions.filter(t => !t.amount_attorney_paid && t.drawdown_amount > 0).length;
 

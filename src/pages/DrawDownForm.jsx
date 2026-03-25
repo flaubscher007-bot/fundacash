@@ -5,6 +5,7 @@ import { ArrowLeft, Save, Trash2, CheckCircle2, AlertTriangle, Upload, FilePlus 
 import TransactionDocuments from '../components/TransactionDocuments';
 import ActivityTab from '../components/ActivityTab';
 import BulkImportDrawdown from '../components/BulkImportDrawdown';
+import PaymentsTab from '../components/PaymentsTab';
 
 const FIRMS = ['S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LAWYERS', 'A WOLMARANS INCORPORATED'];
 
