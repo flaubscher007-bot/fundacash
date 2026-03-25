@@ -60,10 +60,21 @@ function parsePaste(text) {
   return rows;
 }
 
+function nextTraceNo(txns) {
+  let maxNum = 0, prefix = '';
+  for (const t of txns) {
+    const m = t.trace_no?.match(/^(.*?)(\d+)$/);
+    if (m) { const n = parseInt(m[2]); if (n > maxNum) { maxNum = n; prefix = m[1]; } }
+  }
+  if (!prefix && maxNum === 0) return null;
+  return (i) => `${prefix}${String(maxNum + 1 + i).padStart(String(maxNum).length, '0')}`;
+}
+
 export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }) {
   const [mode, setMode] = useState('excel'); // 'excel' | 'paste'
   const [pasteText, setPasteText] = useState('');
   const [rows, setRows] = useState([]);
+  const [duplicates, setDuplicates] = useState([]); // indices of duplicate rows
   const [firm, setFirm] = useState(defaultFirm || FIRMS[0]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -126,6 +137,31 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
   const handleSave = async () => {
     if (!rows.length) return;
     setSaving(true);
+
+    // Fetch existing transactions for this firm to check duplicates and get next trace_no
+    const existing = await base44.entities.Transaction.filter({ law_firm: firm }, '-created_date', 2000);
+    const getNext = nextTraceNo(existing);
+    let traceOffset = 0;
+
+    // Find duplicates
+    const dupIndices = [];
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const isDup = existing.some(t =>
+        t.client_name?.toLowerCase().trim() === r.client_name?.toLowerCase().trim() &&
+        t.expert_name?.toLowerCase().trim() === r.expert_name?.toLowerCase().trim() &&
+        t.product?.toLowerCase().trim() === r.product?.toLowerCase().trim() &&
+        r.client_name && r.expert_name && r.product
+      );
+      if (isDup) dupIndices.push(i);
+    }
+
+    if (dupIndices.length > 0) {
+      setDuplicates(dupIndices);
+      setSaving(false);
+      return;
+    }
+
     const records = rows.map(r => ({
       ...r,
       law_firm: firm,
@@ -133,8 +169,32 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
       payment_status: 'PENDING',
       drawdown_amount: Number(r.drawdown_amount) || 0,
       total_invoiced: Number(r.total_invoiced) || 0,
+      // auto-assign trace_no if missing
+      trace_no: r.trace_no || (getNext ? getNext(traceOffset++) : ''),
     }));
-    // Batch in chunks of 50
+    for (let i = 0; i < records.length; i += 50) {
+      await base44.entities.Transaction.bulkCreate(records.slice(i, i + 50));
+    }
+    setSaving(false);
+    onImported(records.length);
+  };
+
+  const handleForceSave = async () => {
+    setDuplicates([]);
+    // Fetch existing again for trace_no
+    const existing = await base44.entities.Transaction.filter({ law_firm: firm }, '-created_date', 2000);
+    const getNext = nextTraceNo(existing);
+    let traceOffset = 0;
+    const records = rows.map(r => ({
+      ...r,
+      law_firm: firm,
+      approved: 'PENDING',
+      payment_status: 'PENDING',
+      drawdown_amount: Number(r.drawdown_amount) || 0,
+      total_invoiced: Number(r.total_invoiced) || 0,
+      trace_no: r.trace_no || (getNext ? getNext(traceOffset++) : ''),
+    }));
+    setSaving(true);
     for (let i = 0; i < records.length; i += 50) {
       await base44.entities.Transaction.bulkCreate(records.slice(i, i + 50));
     }
@@ -202,6 +262,21 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
         </div>
       )}
 
+      {/* Duplicate warning */}
+      {duplicates.length > 0 && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-amber-400/10 border border-amber-400/30 rounded-xl">
+          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <p className="text-sm text-amber-300 font-semibold">{duplicates.length} possible duplicate{duplicates.length !== 1 ? 's' : ''} detected</p>
+            <p className="text-sm text-amber-300/80 mt-0.5">Rows {duplicates.map(i => i + 1).join(', ')} match existing transactions (same firm, client, expert & product).</p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <button onClick={() => setDuplicates([])} className="text-xs px-3 py-1.5 rounded border border-border text-muted-foreground hover:text-foreground transition-colors">Review</button>
+            <button onClick={handleForceSave} className="text-xs px-3 py-1.5 rounded bg-amber-400 text-black font-semibold hover:bg-amber-300 transition-colors">Import Anyway</button>
+          </div>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="flex items-start gap-3 px-4 py-3 bg-destructive/10 border border-destructive/30 rounded-lg">
@@ -231,8 +306,11 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
                 </thead>
                 <tbody>
                   {rows.map((r, i) => (
-                    <tr key={i} className="border-t border-border/50 hover:bg-muted/20">
-                      <td className="px-3 py-2 font-mono text-primary">{r.trace_no || '—'}</td>
+                   <tr key={i} className={`border-t border-border/50 hover:bg-muted/20 ${duplicates.includes(i) ? 'bg-amber-400/10' : ''}`}>
+                     <td className="px-3 py-2 font-mono text-primary">
+                       {r.trace_no || <span className="text-muted-foreground italic">auto</span>}
+                       {duplicates.includes(i) && <span className="ml-1 text-amber-400 text-xs font-bold">⚠</span>}
+                     </td>
                       <td className="px-3 py-2 text-foreground max-w-[160px] truncate">{r.client_name || '—'}</td>
                       <td className="px-3 py-2 text-muted-foreground">{r.draw_no || '—'}</td>
                       <td className="px-3 py-2 text-foreground">R {Number(r.drawdown_amount || 0).toLocaleString('en-ZA')}</td>
