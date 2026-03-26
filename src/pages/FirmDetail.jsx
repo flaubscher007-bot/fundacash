@@ -7,6 +7,7 @@ import ClientFoldersTab from '../components/firm/ClientFoldersTab';
 import StatementTab from '../components/firm/StatementTab';
 import FirmDashboard from '../components/firm/FirmDashboard';
 import FirmPaymentsTab from '../components/firm/FirmPaymentsTab';
+import FirmTransactionsTab from '../components/firm/FirmTransactionsTab';
 
 const FIRM_MAP = {
   'lhl': 'LHL ATTORNEYS',
@@ -16,7 +17,7 @@ const FIRM_MAP = {
   'wolmarans': 'A WOLMARANS INCORPORATED',
 };
 
-const TABS = ['Dashboard', 'Payments', 'Agreements', 'Client Folders', 'Monthly Statement'];
+const TABS = ['Dashboard', 'Transactions', 'Payments', 'Agreements', 'Client Folders', 'Monthly Statement'];
 
 export default function FirmDetail() {
   const { slug } = useParams();
@@ -125,6 +126,16 @@ export default function FirmDetail() {
               firmName={firmName}
               transactions={transactions}
               agreement={agreement}
+            />
+          )}
+          {tab === 'Transactions' && (
+            <FirmTransactionsTab
+              firmName={firmName}
+              transactions={transactions}
+              onTransactionUpdated={(id, patch) => setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...patch } : t))}
+              onTransactionsImported={() => {
+                base44.entities.Transaction.filter({ law_firm: firmName }, '-created_date', 10000).then(setTransactions);
+              }}
             />
           )}
           {tab === 'Payments' && (
