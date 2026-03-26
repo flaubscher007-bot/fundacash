@@ -66,7 +66,7 @@ export default function Layout() {
             </div>
             <div>
               <div className="font-space font-bold text-base text-foreground leading-none">
-                <span className="text-primary">FUNDA</span><span className="text-foreground">CASH</span>
+                <span className="text-primary">MLF</span><span className="text-foreground"> ONLINE</span>
               </div>
               <div className="text-[10px] text-muted-foreground mt-0.5 tracking-wide uppercase">MLF Tracker</div>
             </div>
@@ -168,7 +168,7 @@ export default function Layout() {
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-muted">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="font-space font-semibold text-foreground">FundaCash</div>
+          <div className="font-space font-semibold text-foreground">MLF Online</div>
         </header>
 
         {/* Page content — leaves room for mobile bottom nav */}
