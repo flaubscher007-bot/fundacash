@@ -28,7 +28,7 @@ function detectFirmFromTrace(traceNo) {
   if (!traceNo) return null;
   const t = String(traceNo).toUpperCase().trim();
   if (t.startsWith('LHL')) return 'LHL ATTORNEYS';
-  if (t.startsWith('RHL') || t.startsWith('RHH')) return 'RH LAWYERS';
+  if (t.startsWith('RH')) return 'RH LAWYERS';
   if (t.startsWith('STE') || t.startsWith('SST')) return 'S STEYN INCORPORATED';
   if (t.startsWith('DBV')) return 'DBVS ATTORNEYS';
   if (t.startsWith('WOL') || t.startsWith('AWI')) return 'A WOLMARANS INCORPORATED';
