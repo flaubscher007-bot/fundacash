@@ -243,8 +243,8 @@ Deno.serve(async (req) => {
         for (const { id, patch } of limited) {
           await base44.asServiceRole.entities.Transaction.update(id, patch);
           updated++;
-          await new Promise(r => setTimeout(r, 250));
-          if (updated % 5 === 0) await new Promise(r => setTimeout(r, 1500));
+          await new Promise(r => setTimeout(r, 600));
+          if (updated % 10 === 0) await new Promise(r => setTimeout(r, 3000));
         }
       }
 

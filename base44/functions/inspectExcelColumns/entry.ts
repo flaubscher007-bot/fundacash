@@ -16,13 +16,18 @@ Deno.serve(async (req) => {
     const ws = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(ws, { raw: true, defval: null });
     if (rows.length > 0) {
+      const rowsWithPayment = rows.filter(r => {
+        const val = r['DATE ATTORNEY PAID'];
+        return val !== null && val !== undefined && val !== '';
+      }).slice(0, 5);
       result[sheetName] = {
-        column_names: Object.keys(rows[0]),
-        sample_row: rows[0],
-        // Find rows with payment-related data
-        rows_with_dates: rows.slice(0, 500).filter(r => {
-          return Object.values(r).some(v => v && String(v).match(/date|paid|settled|settlement/i));
-        }).slice(0, 3),
+        total_rows: rows.length,
+        rows_with_date_attorney_paid: rowsWithPayment.map(r => ({
+          trace_no: r['TRACE NO'],
+          date_attorney_paid: r['DATE ATTORNEY PAID'],
+          draw_down_amount: r[' DRAW-DOWN AMOUNT '],
+          attorney_interest: r[' ATTORNEY INTEREST '],
+        })),
       };
     }
   }
