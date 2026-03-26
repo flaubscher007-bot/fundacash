@@ -38,7 +38,7 @@ function detectFirmFromTrace(traceNo) {
 function xlsxDateToISO(val) {
   if (!val) return null;
   if (typeof val === 'number') {
-    if (val < 1000) return null; // probably a serial error
+    if (val < 1000) return null;
     const d = new Date(Math.round((val - 25569) * 86400 * 1000));
     if (d.getFullYear() < 1990 || d.getFullYear() > 2100) return null;
     return d.toISOString().split('T')[0];
@@ -46,7 +46,6 @@ function xlsxDateToISO(val) {
   if (typeof val === 'string') {
     const s = val.trim();
     if (!s || s.includes('#') || s === '1901-06-23') return null;
-    // Handle various date formats
     const m = s.match(/^(\d{4}[-/]\d{2}[-/]\d{2})/);
     if (m) {
       const d = new Date(m[1]);
@@ -81,9 +80,9 @@ function normalizeApproved(val) {
   return 'PENDING';
 }
 
-// Get field from row using multiple possible column names (case-insensitive)
 function getField(row, ...keys) {
   for (const key of keys) {
+    // trim both sides to handle columns with leading/trailing spaces (e.g. " DRAW-DOWN AMOUNT ")
     const found = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase().trim());
     if (found !== undefined && row[found] !== null && row[found] !== undefined && row[found] !== '') {
       return row[found];
@@ -97,7 +96,6 @@ function mapRow(r) {
   const clientName = getField(r, 'CLIENT NAME', 'client name', 'client_name');
   if (!traceNo || !clientName) return null;
 
-  // Skip total/summary rows
   const traceStr = String(traceNo).trim();
   if (traceStr.toLowerCase() === 'total' || traceStr.toLowerCase() === 'row labels') return null;
 
@@ -106,10 +104,8 @@ function mapRow(r) {
   const law_firm = firmFromCol || firmFromTrace;
   if (!law_firm) return null;
 
-  // Draw number — can be in DRAW NO or DRAWN-DOWN or Column2 (older S Steyn sheets) or DRAW NUMBER
   const drawNo = getField(r, 'DRAW NO', 'draw no', 'draw number') ||
     (() => {
-      // Column2 sometimes holds draw no in older S Steyn sheets
       const col2 = r['Column2'] || r['Column1'];
       if (col2 && typeof col2 === 'string' && col2.toUpperCase().startsWith('DRAW')) return col2;
       return null;
@@ -135,8 +131,11 @@ function mapRow(r) {
     attorney_interest_payment_date: xlsxDateToISO(getField(r, 'DATE ATTORNEY PAID', 'date attorney paid')),
     amount_attorney_paid: parseNum(getField(r, 'AMOUNT PAID', 'amount paid', 'AMOUNT ATTORNEY PAID', 'amount attorney paid')),
     new_capital_amount: parseNum(getField(r, 'NEW CAPITAL AMOUNT', 'new capital amount')),
-    drawdown_payment_date: xlsxDateToISO(getField(r, 'DRAWDOWN PAYMENT DATE', 'drawdown payment date')),
-    settlement_payment_date: xlsxDateToISO(getField(r, 'SETTLEMENT PAYMENT DATE', 'settlement payment date')),
+    drawdown_payment_date: xlsxDateToISO(getField(r, 'DRAWDOWN PAYMENT DATE', 'drawdown payment date', 'DD PAYMENT DATE', 'dd payment date')),
+    // A Wolmarans uses 'DATE ATTORNEY PAID' as settlement date; other firms may have a dedicated column
+    settlement_payment_date: xlsxDateToISO(
+      getField(r, 'SETTLEMENT PAYMENT DATE', 'settlement payment date', 'SETTLEMENT DATE', 'settlement date', 'DATE SETTLED', 'date settled', 'SETTLED DATE', 'settled date', 'DATE ATTORNEY PAID', 'date attorney paid')
+    ),
     mlf: getField(r, 'MLF') ? String(getField(r, 'MLF')).trim().toUpperCase() : null,
     law_firm,
     contact_person: String(getField(r, 'CONTACT PERSON', 'contact person') || '').trim() || null,
@@ -156,93 +155,141 @@ const SKIP_SHEETS = ['SUMMARY', 'summary', 'PIVOT', 'pivot'];
 
 Deno.serve(async (req) => {
   try {
-  const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
-  if (!user || user.role !== 'admin') {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  const { file_url, skip_duplicates = true, dry_run = false, max_insert = 200 } = await req.json();
-  if (!file_url) return Response.json({ error: 'file_url required' }, { status: 400 });
-
-  const resp = await fetch(file_url);
-  if (!resp.ok) return Response.json({ error: `Failed to fetch file: ${resp.status}` }, { status: 500 });
-
-  const buffer = await resp.arrayBuffer();
-  const data = new Uint8Array(buffer);
-  const workbook = XLSX.read(data, { type: 'array', raw: true, cellDates: false });
-
-  // Use FULL TRACKER if available, otherwise merge all non-summary sheets
-  const TARGET_SHEET = 'FULL TRACKER';
-  let allRows = [];
-  let sheetsUsed = [];
-
-  if (workbook.SheetNames.includes(TARGET_SHEET)) {
-    const ws = workbook.Sheets[TARGET_SHEET];
-    const rows = XLSX.utils.sheet_to_json(ws, { raw: true, defval: null });
-    allRows = rows;
-    sheetsUsed = [TARGET_SHEET];
-  } else {
-    // Merge all non-summary data sheets (e.g. A Wolmarans has only FULL STATEMENT)
-    for (const sheetName of workbook.SheetNames) {
-      if (SKIP_SHEETS.some(s => sheetName.toLowerCase().includes(s.toLowerCase()))) continue;
-      const ws = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, { raw: true, defval: null });
-      allRows.push(...rows);
-      sheetsUsed.push(sheetName);
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-  }
 
-  // Map rows
-  const mapped = allRows.map(mapRow).filter(Boolean);
+    const body = await req.json();
+    const {
+      file_url,
+      skip_duplicates = true,
+      dry_run = false,
+      max_insert = 200,
+      update_existing = false,
+      update_fields = [],
+      update_offset = 0,
+    } = body;
 
-  // Deduplicate within this import by trace_no (keep last occurrence)
-  const seenInFile = new Map();
-  for (const r of mapped) {
-    seenInFile.set(r.trace_no, r);
-  }
-  const deduped = Array.from(seenInFile.values());
+    if (!file_url) return Response.json({ error: 'file_url required' }, { status: 400 });
 
-  // Load existing trace numbers
-  let existingTraceNos = new Set();
-  let page = 0;
-  const PAGE_SIZE = 200;
-  while (true) {
-    const batch = await base44.asServiceRole.entities.Transaction.list('-created_date', PAGE_SIZE, page * PAGE_SIZE);
-    const items = Array.isArray(batch) ? batch : (batch.items || batch.results || []);
-    if (!items.length) break;
-    for (const t of items) { if (t.trace_no) existingTraceNos.add(t.trace_no); }
-    if (items.length < PAGE_SIZE) break;
-    page++;
-    await new Promise(r => setTimeout(r, 200));
-  }
+    const resp = await fetch(file_url);
+    if (!resp.ok) return Response.json({ error: `Failed to fetch file: ${resp.status}` }, { status: 500 });
 
-  const toInsert = skip_duplicates ? deduped.filter(r => !existingTraceNos.has(r.trace_no)) : deduped;
-  const skipped = deduped.length - toInsert.length;
-  const limited = toInsert.slice(0, max_insert);
+    const buffer = await resp.arrayBuffer();
+    const data = new Uint8Array(buffer);
+    const workbook = XLSX.read(data, { type: 'array', raw: true, cellDates: false });
 
-  let inserted = 0;
-  if (!dry_run) {
-    const BATCH = 15;
-    for (let i = 0; i < limited.length; i += BATCH) {
-      await base44.asServiceRole.entities.Transaction.bulkCreate(limited.slice(i, i + BATCH));
-      inserted += Math.min(BATCH, limited.length - i);
-      if (i + BATCH < limited.length) await new Promise(r => setTimeout(r, 500));
+    const TARGET_SHEET = 'FULL TRACKER';
+    let allRows = [];
+    let sheetsUsed = [];
+
+    if (workbook.SheetNames.includes(TARGET_SHEET)) {
+      const ws = workbook.Sheets[TARGET_SHEET];
+      allRows = XLSX.utils.sheet_to_json(ws, { raw: true, defval: null });
+      sheetsUsed = [TARGET_SHEET];
+    } else {
+      for (const sheetName of workbook.SheetNames) {
+        if (SKIP_SHEETS.some(s => sheetName.toLowerCase().includes(s.toLowerCase()))) continue;
+        const ws = workbook.Sheets[sheetName];
+        allRows.push(...XLSX.utils.sheet_to_json(ws, { raw: true, defval: null }));
+        sheetsUsed.push(sheetName);
+      }
     }
-  }
 
-  return Response.json({
-    success: true,
-    dry_run,
-    sheets_used: sheetsUsed,
-    total_rows_parsed: allRows.length,
-    total_valid: mapped.length,
-    unique_trace_nos: deduped.length,
-    skipped_duplicates: skipped,
-    to_insert_total: toInsert.length,
-    inserted,
-    remaining: Math.max(0, toInsert.length - (dry_run ? 0 : limited.length)),
-  });
+    const mapped = allRows.map(mapRow).filter(Boolean);
+
+    // Deduplicate within file by trace_no (keep last occurrence)
+    const seenInFile = new Map();
+    for (const r of mapped) seenInFile.set(r.trace_no, r);
+    const deduped = Array.from(seenInFile.values());
+
+    // Load ALL existing records — build Set for dupe check + Map for updates
+    let existingTraceNos = new Set();
+    let existingMap = new Map();
+    let page = 0;
+    const PAGE_SIZE = 200;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.Transaction.list('-created_date', PAGE_SIZE, page * PAGE_SIZE);
+      const items = Array.isArray(batch) ? batch : (batch.items || batch.results || []);
+      if (!items.length) break;
+      for (const t of items) {
+        if (t.trace_no) {
+          existingTraceNos.add(t.trace_no);
+          existingMap.set(t.trace_no, t.id);
+        }
+      }
+      if (items.length < PAGE_SIZE) break;
+      page++;
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    // ── UPDATE EXISTING MODE ──────────────────────────────────────────────────
+    if (update_existing && update_fields.length > 0) {
+      const candidates = deduped
+        .filter(r => existingMap.has(r.trace_no))
+        .map(r => ({
+          id: existingMap.get(r.trace_no),
+          patch: Object.fromEntries(update_fields.map(f => [f, r[f] ?? null])),
+        }))
+        .filter(r => update_fields.some(f => r.patch[f] !== null && r.patch[f] !== undefined));
+
+      const toUpdate = candidates.slice(update_offset);
+      const limited = toUpdate.slice(0, max_insert);
+      let updated = 0;
+
+      if (!dry_run) {
+        for (const { id, patch } of limited) {
+          await base44.asServiceRole.entities.Transaction.update(id, patch);
+          updated++;
+          await new Promise(r => setTimeout(r, 250));
+          if (updated % 5 === 0) await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+
+      return Response.json({
+        success: true,
+        dry_run,
+        mode: 'update_existing',
+        update_fields,
+        update_offset,
+        total_in_file: deduped.length,
+        total_candidates: candidates.length,
+        updated,
+        remaining: Math.max(0, toUpdate.length - (dry_run ? 0 : limited.length)),
+        next_offset: update_offset + updated,
+      });
+    }
+
+    // ── INSERT NEW RECORDS MODE ───────────────────────────────────────────────
+    const toInsert = skip_duplicates ? deduped.filter(r => !existingTraceNos.has(r.trace_no)) : deduped;
+    const skipped = deduped.length - toInsert.length;
+    const limited = toInsert.slice(0, max_insert);
+
+    let inserted = 0;
+    if (!dry_run) {
+      const BATCH = 15;
+      for (let i = 0; i < limited.length; i += BATCH) {
+        await base44.asServiceRole.entities.Transaction.bulkCreate(limited.slice(i, i + BATCH));
+        inserted += Math.min(BATCH, limited.length - i);
+        if (i + BATCH < limited.length) await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    return Response.json({
+      success: true,
+      dry_run,
+      sheets_used: sheetsUsed,
+      total_rows_parsed: allRows.length,
+      total_valid: mapped.length,
+      unique_trace_nos: deduped.length,
+      skipped_duplicates: skipped,
+      to_insert_total: toInsert.length,
+      inserted,
+      remaining: Math.max(0, toInsert.length - (dry_run ? 0 : limited.length)),
+    });
+
   } catch (err) {
     console.error('IMPORT ERROR:', err.message, err.stack);
     return Response.json({ error: err.message }, { status: 500 });

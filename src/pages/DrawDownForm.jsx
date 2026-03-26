@@ -268,6 +268,21 @@ export default function DrawDownForm() {
                 {['YES', 'NO', 'PENDING', 'CANCELLED'].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
+
+            {form.approved === 'CANCELLED' && (
+              <>
+                <Field label="Cancellation Reason" required>
+                  <select value={form.cancellation_reason || ''} onChange={set('cancellation_reason')}>
+                    <option value="">Select reason...</option>
+                    {['Duplicate', 'Client Deceased', 'Firm Lost Mandate', 'Client Withdrew', 'Funding Declined', 'Matter Settled Externally', 'Other'].map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </Field>
+                <Field label="Cancellation Notes">
+                  <input value={form.cancellation_notes || ''} onChange={set('cancellation_notes')} placeholder="Details about the cancellation..." />
+                </Field>
+              </>
+            )}
+
             <Field label="Potential Draw-Down (R)"><input type="number" value={form.potential_drawdown} onChange={set('potential_drawdown')} /></Field>
             <Field label="Budget Amount (R)"><input type="number" value={form.budget_amount} onChange={set('budget_amount')} /></Field>
             <Field label="Draw-Down Amount (R)"><input type="number" value={form.drawdown_amount} onChange={set('drawdown_amount')} /></Field>
