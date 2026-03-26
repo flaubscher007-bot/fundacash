@@ -4,6 +4,7 @@ import {
   Upload, AlertTriangle, CheckCircle2, XCircle, Loader2,
   ChevronDown, ChevronRight, FileSearch, TrendingDown, TrendingUp, Minus
 } from 'lucide-react';
+import ReconciliationActions from '../components/ReconciliationActions';
 
 const FIRMS = [
   'S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS',
@@ -77,6 +78,7 @@ function VarianceRow({ v }) {
               </tbody>
             </table>
           </div>
+          <ReconciliationActions variance={v} onResolved={(traceNo, action) => console.log('Resolved', traceNo, action)} />
         </div>
       )}
     </div>

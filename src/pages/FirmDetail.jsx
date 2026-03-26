@@ -31,7 +31,7 @@ export default function FirmDetail() {
   useEffect(() => {
     if (!firmName) return;
     Promise.all([
-      base44.entities.Transaction.filter({ law_firm: firmName }, '-created_date', 2000),
+      base44.entities.Transaction.filter({ law_firm: firmName }, '-created_date', 10000),
       base44.entities.FirmAgreement.filter({ firm_name: firmName }),
       base44.entities.Document.filter({ firm_name: firmName }, '-created_date', 500),
     ]).then(([txns, ags, docs]) => {

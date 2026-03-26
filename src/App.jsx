@@ -18,6 +18,7 @@ import ProofReview from './pages/ProofReview';
 import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import ReconciliationReport from './pages/ReconciliationReport';
+import TransactionDetail from './pages/TransactionDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/users" element={<UserManagement />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/reconciliation" element={<ReconciliationReport />} />
+        <Route path="/transaction/:id" element={<TransactionDetail />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
