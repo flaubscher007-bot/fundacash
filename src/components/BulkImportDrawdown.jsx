@@ -6,20 +6,55 @@ const FIRMS = ['S STEYN INCORPORATED', 'LHL ATTORNEYS', 'DBVS ATTORNEYS', 'RH LA
 
 const COLUMN_ALIASES = {
   trace_no: ['trace no', 'trace_no', 'traceno', 'trace number'],
-  attorney_ref_no: ['attorney ref', 'attorney ref no', 'attorney_ref_no', 'ref no', 'reference'],
+  attorney_ref_no: ['attorney ref no.', 'attorney ref no', 'attorney ref', 'attorney_ref_no', 'ref no', 'reference'],
   client_name: ['client name', 'client_name', 'client', 'name'],
-  drawdown_amount: ['drawdown amount', 'draw-down amount', 'drawdown_amount', 'amount', 'draw down amount'],
-  drawdown_date: ['drawdown date', 'draw-down date', 'drawdown_date', 'date', 'draw down date'],
+  approved: ['approved'],
+  potential_drawdown: ['potential draw-down', 'potential drawdown', 'potential_drawdown', 'potential draw down'],
+  budget_amount: ['budget amount', 'budget_amount'],
+  drawdown_amount: ['draw-down amount', 'drawdown amount', 'drawdown_amount', 'draw down amount'],
+  drawdown_date: ['drawn-down date', 'draw-down date', 'drawdown date', 'drawdown_date', 'drawn down date'],
+  draw_no: ['draw no', 'draw_no', 'draw number', 'drawn-down', 'drawn down'],
+  attorney_interest_start_date: ['attorney interest start date', 'interest start date', 'attorney_interest_start_date'],
+  second_payment: ['second payment', 'second_payment'],
+  attorney_interest: ['attorney interest', 'attorney_interest'],
+  funda_interest: ['funda amount', 'funda_interest', 'funda interest'],
+  funda_interest_payment_date: ['date paid', 'funda_interest_payment_date'],
+  amount_attorney_paid: ['amount paid', 'amount_attorney_paid'],
+  mlf: ['mlf'],
+  law_firm: ['attorney/client', 'attorney client', 'law firm', 'law_firm', 'firm'],
+  contact_person: ['contact person', 'contact_person', 'contact'],
   expert_name: ['expert name', 'expert_name', 'expert'],
   product: ['product'],
-  invoice_no: ['invoice no', 'invoice_no', 'invoice number'],
+  date_of_assessment: ['date of assessment', 'date_of_assessment', 'assessment date'],
+  assessment_status: ['assessment status', 'assessment_status'],
   invoice_date: ['invoice date', 'invoice_date'],
+  invoice_no: ['invoice no', 'invoice no.', 'invoice_no', 'invoice number'],
   total_invoiced: ['total invoiced', 'total_invoiced', 'invoiced amount'],
-  draw_no: ['draw no', 'draw_no', 'draw number'],
   account_number: ['account number', 'account_number', 'account no'],
-  contact_person: ['contact person', 'contact_person', 'contact'],
   notes: ['notes', 'note', 'comment'],
 };
+
+const FIRM_NAME_MAP = {
+  'lhl attorneys': 'LHL ATTORNEYS',
+  'rh lawyers': 'RH LAWYERS',
+  's steyn incorporated': 'S STEYN INCORPORATED',
+  'dbvs attorneys': 'DBVS ATTORNEYS',
+  'a wolmarans incorporated': 'A WOLMARANS INCORPORATED',
+};
+
+function normalizeFirm(val) {
+  if (!val) return null;
+  return FIRM_NAME_MAP[val.toLowerCase().trim()] || null;
+}
+
+function normalizeApproved(val) {
+  if (!val) return 'PENDING';
+  const v = String(val).trim().toUpperCase();
+  if (v === 'YES' || v === 'Y') return 'YES';
+  if (v === 'NO' || v === 'N') return 'NO';
+  if (v === 'CANCELLED') return 'CANCELLED';
+  return 'PENDING';
+}
 
 function normalizeKey(header) {
   const h = header.toLowerCase().trim();
@@ -97,20 +132,32 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
               items: {
                 type: 'object',
                 properties: {
-                  trace_no: { type: 'string' },
-                  attorney_ref_no: { type: 'string' },
-                  client_name: { type: 'string' },
-                  drawdown_amount: { type: 'number' },
-                  drawdown_date: { type: 'string', description: 'ISO date YYYY-MM-DD' },
-                  expert_name: { type: 'string' },
-                  product: { type: 'string' },
-                  invoice_no: { type: 'string' },
-                  invoice_date: { type: 'string' },
-                  total_invoiced: { type: 'number' },
-                  draw_no: { type: 'string' },
-                  account_number: { type: 'string' },
-                  contact_person: { type: 'string' },
-                  notes: { type: 'string' },
+                  trace_no: { type: 'string', description: 'TRACE NO column' },
+                  attorney_ref_no: { type: 'string', description: 'ATTORNEY REF NO. column' },
+                  client_name: { type: 'string', description: 'CLIENT NAME column' },
+                  approved: { type: 'string', description: 'APPROVED column - YES/NO/PENDING' },
+                  potential_drawdown: { type: 'number', description: 'POTENTIAL DRAW-DOWN column' },
+                  budget_amount: { type: 'number', description: 'BUDGET AMOUNT column' },
+                  draw_no: { type: 'string', description: 'DRAWN-DOWN or DRAW NO column e.g. DRAW 01' },
+                  drawdown_amount: { type: 'number', description: 'DRAW-DOWN AMOUNT column' },
+                  drawdown_date: { type: 'string', description: 'DRAWN-DOWN DATE column as ISO date YYYY-MM-DD' },
+                  attorney_interest_start_date: { type: 'string', description: 'ATTORNEY INTEREST START DATE or INTEREST START DATE column as ISO date YYYY-MM-DD' },
+                  second_payment: { type: 'number', description: 'SECOND PAYMENT column' },
+                  attorney_interest: { type: 'number', description: 'ATTORNEY INTEREST column' },
+                  funda_interest: { type: 'number', description: 'FUNDA AMOUNT column' },
+                  funda_interest_payment_date: { type: 'string', description: 'DATE PAID column as ISO date YYYY-MM-DD' },
+                  amount_attorney_paid: { type: 'number', description: 'AMOUNT PAID column' },
+                  mlf: { type: 'string', description: 'MLF column YES/NO' },
+                  law_firm: { type: 'string', description: 'ATTORNEY/CLIENT column - the law firm name' },
+                  contact_person: { type: 'string', description: 'CONTACT PERSON column' },
+                  expert_name: { type: 'string', description: 'EXPERT NAME column' },
+                  product: { type: 'string', description: 'PRODUCT column e.g. MLR RAF, RAF 4' },
+                  date_of_assessment: { type: 'string', description: 'DATE OF ASSESSMENT column as ISO date YYYY-MM-DD' },
+                  assessment_status: { type: 'string', description: 'ASSESSMENT STATUS column e.g. SEEN' },
+                  invoice_date: { type: 'string', description: 'INVOICE DATE column as ISO date YYYY-MM-DD' },
+                  invoice_no: { type: 'string', description: 'INVOICE NO column' },
+                  total_invoiced: { type: 'number', description: 'TOTAL INVOICED column' },
+                  account_number: { type: 'string', description: 'ACCOUNT NUMBER column' },
                 },
               },
             },
@@ -119,7 +166,21 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
       });
       if (result.status !== 'success') throw new Error(result.details || 'Extraction failed');
       const extracted = result.output?.transactions || (Array.isArray(result.output) ? result.output : []);
-      setRows(extracted.map(r => ({ ...r, drawdown_date: parseDate(r.drawdown_date), invoice_date: parseDate(r.invoice_date) })));
+      const mapped = extracted
+        .filter(r => r.trace_no && r.client_name)
+        .map(r => ({
+          ...r,
+          drawdown_date: parseDate(r.drawdown_date),
+          invoice_date: parseDate(r.invoice_date),
+          date_of_assessment: parseDate(r.date_of_assessment),
+          attorney_interest_start_date: parseDate(r.attorney_interest_start_date),
+          funda_interest_payment_date: parseDate(r.funda_interest_payment_date),
+          approved: normalizeApproved(r.approved),
+          mlf: r.mlf ? String(r.mlf).trim().toUpperCase() : '',
+          // Auto-detect firm from ATTORNEY/CLIENT column
+          _detected_firm: normalizeFirm(r.law_firm),
+        }));
+      setRows(mapped);
     } catch (err) {
       setError(err.message);
     }
@@ -134,24 +195,58 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
     setRows(parsed);
   };
 
+  const buildRecords = (rowList, existingMap) => {
+    let traceOffsets = {};
+    return rowList.map(r => {
+      // Use detected firm from ATTORNEY/CLIENT col, else fallback to selector
+      const rowFirm = r._detected_firm || firm;
+      if (!traceOffsets[rowFirm]) traceOffsets[rowFirm] = 0;
+      const existing = existingMap[rowFirm] || [];
+      const getNext = nextTraceNo(existing);
+      const { _detected_firm, law_firm, ...rest } = r;
+      return {
+        ...rest,
+        law_firm: rowFirm,
+        approved: r.approved || 'PENDING',
+        payment_status: 'PENDING',
+        drawdown_amount: Number(r.drawdown_amount) || 0,
+        total_invoiced: Number(r.total_invoiced) || 0,
+        potential_drawdown: Number(r.potential_drawdown) || undefined,
+        budget_amount: Number(r.budget_amount) || undefined,
+        second_payment: r.second_payment ? Number(r.second_payment) : undefined,
+        attorney_interest: r.attorney_interest ? Number(r.attorney_interest) : undefined,
+        funda_interest: r.funda_interest ? Number(r.funda_interest) : undefined,
+        amount_attorney_paid: r.amount_attorney_paid ? Number(r.amount_attorney_paid) : undefined,
+        trace_no: r.trace_no || (getNext ? getNext(traceOffsets[rowFirm]++) : ''),
+      };
+    });
+  };
+
   const handleSave = async () => {
     if (!rows.length) return;
     setSaving(true);
 
-    // Fetch existing transactions for this firm to check duplicates and get next trace_no
-    const existing = await base44.entities.Transaction.filter({ law_firm: firm }, '-created_date', 2000);
-    const getNext = nextTraceNo(existing);
-    let traceOffset = 0;
+    // Collect all unique firms in this import
+    const firmSet = [...new Set(rows.map(r => r._detected_firm || firm))];
+    const existingMap = {};
+    for (const f of firmSet) {
+      existingMap[f] = await base44.entities.Transaction.filter({ law_firm: f }, '-created_date', 2000);
+    }
 
-    // Find duplicates
+    // Find duplicates (check trace_no first, then client+expert+product)
     const dupIndices = [];
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
+      const rowFirm = r._detected_firm || firm;
+      const existing = existingMap[rowFirm] || [];
       const isDup = existing.some(t =>
-        t.client_name?.toLowerCase().trim() === r.client_name?.toLowerCase().trim() &&
-        t.expert_name?.toLowerCase().trim() === r.expert_name?.toLowerCase().trim() &&
-        t.product?.toLowerCase().trim() === r.product?.toLowerCase().trim() &&
-        r.client_name && r.expert_name && r.product
+        (r.trace_no && t.trace_no === r.trace_no) ||
+        (
+          t.client_name?.toLowerCase().trim() === r.client_name?.toLowerCase().trim() &&
+          t.expert_name?.toLowerCase().trim() === r.expert_name?.toLowerCase().trim() &&
+          t.product?.toLowerCase().trim() === r.product?.toLowerCase().trim() &&
+          r.client_name && r.expert_name && r.product
+        )
       );
       if (isDup) dupIndices.push(i);
     }
@@ -162,16 +257,7 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
       return;
     }
 
-    const records = rows.map(r => ({
-      ...r,
-      law_firm: firm,
-      approved: 'PENDING',
-      payment_status: 'PENDING',
-      drawdown_amount: Number(r.drawdown_amount) || 0,
-      total_invoiced: Number(r.total_invoiced) || 0,
-      // auto-assign trace_no if missing
-      trace_no: r.trace_no || (getNext ? getNext(traceOffset++) : ''),
-    }));
+    const records = buildRecords(rows, existingMap);
     for (let i = 0; i < records.length; i += 50) {
       await base44.entities.Transaction.bulkCreate(records.slice(i, i + 50));
     }
@@ -181,20 +267,13 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
 
   const handleForceSave = async () => {
     setDuplicates([]);
-    // Fetch existing again for trace_no
-    const existing = await base44.entities.Transaction.filter({ law_firm: firm }, '-created_date', 2000);
-    const getNext = nextTraceNo(existing);
-    let traceOffset = 0;
-    const records = rows.map(r => ({
-      ...r,
-      law_firm: firm,
-      approved: 'PENDING',
-      payment_status: 'PENDING',
-      drawdown_amount: Number(r.drawdown_amount) || 0,
-      total_invoiced: Number(r.total_invoiced) || 0,
-      trace_no: r.trace_no || (getNext ? getNext(traceOffset++) : ''),
-    }));
     setSaving(true);
+    const firmSet = [...new Set(rows.map(r => r._detected_firm || firm))];
+    const existingMap = {};
+    for (const f of firmSet) {
+      existingMap[f] = await base44.entities.Transaction.filter({ law_firm: f }, '-created_date', 2000);
+    }
+    const records = buildRecords(rows, existingMap);
     for (let i = 0; i < records.length; i += 50) {
       await base44.entities.Transaction.bulkCreate(records.slice(i, i + 50));
     }
@@ -209,7 +288,7 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
       {/* Firm selector */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Law Firm for all records</label>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fallback Law Firm (if not detected from data)</label>
           <select value={firm} onChange={e => setFirm(e.target.value)} className="bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
             {FIRMS.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
@@ -299,7 +378,7 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
               <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-muted/80">
                   <tr>
-                    {['Trace No', 'Client Name', 'Draw No', 'Amount', 'Date', 'Expert', 'Notes', ''].map(h => (
+                    {['Trace No', 'Client Name', 'Firm', 'Draw No', 'DD Amount', 'DD Date', 'Expert', 'Approved', ''].map(h => (
                       <th key={h} className="text-left px-3 py-2 text-muted-foreground font-medium whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -307,16 +386,27 @@ export default function BulkImportDrawdown({ defaultFirm, onImported, onCancel }
                 <tbody>
                   {rows.map((r, i) => (
                    <tr key={i} className={`border-t border-border/50 hover:bg-muted/20 ${duplicates.includes(i) ? 'bg-amber-400/10' : ''}`}>
-                     <td className="px-3 py-2 font-mono text-primary">
+                     <td className="px-3 py-2 font-mono text-primary whitespace-nowrap">
                        {r.trace_no || <span className="text-muted-foreground italic">auto</span>}
                        {duplicates.includes(i) && <span className="ml-1 text-amber-400 text-xs font-bold">⚠</span>}
                      </td>
-                      <td className="px-3 py-2 text-foreground max-w-[160px] truncate">{r.client_name || '—'}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.draw_no || '—'}</td>
-                      <td className="px-3 py-2 text-foreground">R {Number(r.drawdown_amount || 0).toLocaleString('en-ZA')}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.drawdown_date || '—'}</td>
+                      <td className="px-3 py-2 text-foreground max-w-[140px] truncate">{r.client_name || '—'}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r._detected_firm ? 'bg-primary/15 text-primary' : 'bg-amber-400/15 text-amber-400'}`}>
+                          {r._detected_firm ? r._detected_firm.split(' ')[0] : firm.split(' ')[0]}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{r.draw_no || '—'}</td>
+                      <td className="px-3 py-2 text-foreground whitespace-nowrap">R {Number(r.drawdown_amount || 0).toLocaleString('en-ZA')}</td>
+                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{r.drawdown_date || '—'}</td>
                       <td className="px-3 py-2 text-muted-foreground max-w-[120px] truncate">{r.expert_name || '—'}</td>
-                      <td className="px-3 py-2 text-muted-foreground max-w-[120px] truncate">{r.notes || '—'}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                          r.approved === 'YES' ? 'bg-emerald-400/15 text-emerald-400' :
+                          r.approved === 'NO' ? 'bg-destructive/15 text-destructive' :
+                          'bg-muted text-muted-foreground'
+                        }`}>{r.approved || 'PENDING'}</span>
+                      </td>
                       <td className="px-3 py-2">
                         <button onClick={() => removeRow(i)} className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-colors">
                           <X className="w-3 h-3" />
