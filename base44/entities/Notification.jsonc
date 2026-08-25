@@ -1,0 +1,51 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "recipient_email": {
+      "type": "string",
+      "title": "Recipient Email"
+    },
+    "firm_name": {
+      "type": "string",
+      "title": "Firm Name"
+    },
+    "type": {
+      "type": "string",
+      "title": "Notification Type",
+      "enum": [
+        "payment_approved",
+        "payment_rejected",
+        "low_balance_threshold",
+        "proof_uploaded",
+        "overdue_alert"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "message": {
+      "type": "string",
+      "title": "Message"
+    },
+    "transaction_id": {
+      "type": "string",
+      "title": "Transaction ID"
+    },
+    "trace_no": {
+      "type": "string",
+      "title": "Trace No"
+    },
+    "is_read": {
+      "type": "boolean",
+      "title": "Read"
+    }
+  },
+  "required": [
+    "recipient_email",
+    "type",
+    "title",
+    "message"
+  ]
+}

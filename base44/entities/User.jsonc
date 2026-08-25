@@ -1,0 +1,50 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "title": "Global Role",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    },
+    "assigned_firm": {
+      "type": "string",
+      "title": "Assigned Law Firm",
+      "enum": [
+        "S STEYN INCORPORATED",
+        "LHL ATTORNEYS",
+        "DBVS ATTORNEYS",
+        "RH LAWYERS",
+        "A WOLMARANS INCORPORATED"
+      ]
+    },
+    "permission_level": {
+      "type": "string",
+      "title": "Permission Level",
+      "enum": [
+        "view_only",
+        "transaction_entry",
+        "reporting",
+        "full_access"
+      ]
+    },
+    "account_status": {
+      "type": "string",
+      "title": "Account Status",
+      "enum": [
+        "active",
+        "disabled",
+        "archived"
+      ]
+    }
+  },
+  "required": [
+    "role",
+    "assigned_firm",
+    "permission_level",
+    "account_status"
+  ]
+}

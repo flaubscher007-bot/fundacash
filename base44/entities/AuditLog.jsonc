@@ -1,0 +1,59 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "title": "Transaction ID"
+    },
+    "trace_no": {
+      "type": "string",
+      "title": "Trace No"
+    },
+    "user_email": {
+      "type": "string",
+      "title": "User"
+    },
+    "action": {
+      "type": "string",
+      "title": "Action",
+      "enum": [
+        "created",
+        "updated",
+        "interest_calculated",
+        "deleted"
+      ]
+    },
+    "changes": {
+      "type": "array",
+      "title": "Changes",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "old_value": {
+            "type": "string"
+          },
+          "new_value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Timestamp"
+    }
+  },
+  "required": [
+    "transaction_id",
+    "action"
+  ]
+}

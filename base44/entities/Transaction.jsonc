@@ -1,0 +1,187 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "trace_no": {
+      "type": "string",
+      "title": "Trace No"
+    },
+    "attorney_ref_no": {
+      "type": "string",
+      "title": "Attorney Ref No"
+    },
+    "client_name": {
+      "type": "string",
+      "title": "Client Name"
+    },
+    "approved": {
+      "type": "string",
+      "title": "Approved",
+      "enum": [
+        "YES",
+        "NO",
+        "PENDING",
+        "CANCELLED"
+      ]
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "title": "Cancellation Reason",
+      "enum": [
+        "Duplicate",
+        "Client Deceased",
+        "Firm Lost Mandate",
+        "Client Withdrew",
+        "Funding Declined",
+        "Matter Settled Externally",
+        "Other"
+      ]
+    },
+    "cancellation_notes": {
+      "type": "string",
+      "title": "Cancellation Notes"
+    },
+    "potential_drawdown": {
+      "type": "number",
+      "title": "Potential Draw-Down"
+    },
+    "budget_amount": {
+      "type": "number",
+      "title": "Budget Amount"
+    },
+    "drawn_down": {
+      "type": "string",
+      "title": "Drawn Down"
+    },
+    "drawdown_amount": {
+      "type": "number",
+      "title": "Draw-Down Amount"
+    },
+    "drawdown_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Draw-Down Date"
+    },
+    "mlf": {
+      "type": "string",
+      "title": "MLF"
+    },
+    "law_firm": {
+      "type": "string",
+      "title": "Law Firm",
+      "enum": [
+        "S STEYN INCORPORATED",
+        "LHL ATTORNEYS",
+        "DBVS ATTORNEYS",
+        "RH LAWYERS",
+        "A WOLMARANS INCORPORATED"
+      ]
+    },
+    "account_number": {
+      "type": "string",
+      "title": "Account Number"
+    },
+    "contact_person": {
+      "type": "string",
+      "title": "Contact Person"
+    },
+    "expert_name": {
+      "type": "string",
+      "title": "Expert Name"
+    },
+    "product": {
+      "type": "string",
+      "title": "Product"
+    },
+    "date_of_assessment": {
+      "type": "string",
+      "format": "date",
+      "title": "Date of Assessment"
+    },
+    "assessment_status": {
+      "type": "string",
+      "title": "Assessment Status"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Invoice Date"
+    },
+    "invoice_no": {
+      "type": "string",
+      "title": "Invoice No"
+    },
+    "total_invoiced": {
+      "type": "number",
+      "title": "Total Invoiced"
+    },
+    "draw_no": {
+      "type": "string",
+      "title": "Draw No"
+    },
+    "payment_status": {
+      "type": "string",
+      "title": "Payment Status",
+      "enum": [
+        "PENDING",
+        "PAID",
+        "PARTIAL",
+        "OVERDUE"
+      ]
+    },
+    "attorney_interest_start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Interest Start Date"
+    },
+    "second_payment": {
+      "type": "number",
+      "title": "Second Payment"
+    },
+    "attorney_interest": {
+      "type": "number",
+      "title": "Attorney Interest"
+    },
+    "funda_interest": {
+      "type": "number",
+      "title": "Funda Interest"
+    },
+    "funda_interest_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Funda Interest Payment Date"
+    },
+    "attorney_interest_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Attorney Interest Payment Date"
+    },
+    "drawdown_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Drawdown Payment Date"
+    },
+    "settlement_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Settlement Payment Date"
+    },
+    "amount_attorney_paid": {
+      "type": "number",
+      "title": "Amount Attorney Paid"
+    },
+    "new_capital_amount": {
+      "type": "number",
+      "title": "New Capital Amount"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "trace_no",
+    "client_name",
+    "law_firm"
+  ]
+}

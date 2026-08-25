@@ -1,0 +1,75 @@
+{
+  "name": "FirmAgreement",
+  "type": "object",
+  "properties": {
+    "firm_name": {
+      "type": "string",
+      "title": "Law Firm",
+      "enum": [
+        "S STEYN INCORPORATED",
+        "LHL ATTORNEYS",
+        "DBVS ATTORNEYS",
+        "RH LAWYERS",
+        "A WOLMARANS INCORPORATED"
+      ]
+    },
+    "funda_interest_rate": {
+      "type": "number",
+      "title": "Fundamedical Interest Rate (% per month)"
+    },
+    "attorney_interest_rate": {
+      "type": "number",
+      "title": "Law Firm Interest Rate (% per month)"
+    },
+    "interest_basis": {
+      "type": "string",
+      "title": "Interest Day-Count Basis",
+      "enum": [
+        "365 days",
+        "30/360",
+        "Actual/360"
+      ]
+    },
+    "interest_start_trigger": {
+      "type": "string",
+      "title": "Interest Start From",
+      "enum": [
+        "drawdown_date",
+        "invoice_date",
+        "assessment_date"
+      ]
+    },
+    "payment_terms_days": {
+      "type": "number",
+      "title": "Payment Terms (days)"
+    },
+    "capital_limit": {
+      "type": "number",
+      "title": "Maximum Capital Limit per Transaction (R)"
+    },
+    "admin_fee_rate": {
+      "type": "number",
+      "title": "Administration Fee (% of drawdown)"
+    },
+    "admin_fee_fixed": {
+      "type": "number",
+      "title": "Administration Fee \u2013 Fixed Amount (R)"
+    },
+    "agreement_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Agreement Date"
+    },
+    "agreement_file_url": {
+      "type": "string",
+      "title": "Agreement File URL"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "firm_name"
+  ]
+}

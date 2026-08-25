@@ -1,0 +1,48 @@
+{
+  "name": "Payment",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "title": "Transaction ID"
+    },
+    "trace_no": {
+      "type": "string",
+      "title": "Trace No"
+    },
+    "law_firm": {
+      "type": "string",
+      "title": "Law Firm"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Payment Date"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount (R)"
+    },
+    "payment_type": {
+      "type": "string",
+      "title": "Payment Type",
+      "enum": [
+        "Drawdown Repayment",
+        "New Capital Balance",
+        "Funda Interest",
+        "Attorney Interest",
+        "Full Settlement"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "transaction_id",
+    "payment_date",
+    "amount",
+    "payment_type"
+  ]
+}

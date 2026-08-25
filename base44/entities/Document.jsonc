@@ -1,0 +1,112 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "firm_name": {
+      "type": "string",
+      "title": "Law Firm",
+      "enum": [
+        "S STEYN INCORPORATED",
+        "LHL ATTORNEYS",
+        "DBVS ATTORNEYS",
+        "RH LAWYERS",
+        "A WOLMARANS INCORPORATED"
+      ]
+    },
+    "transaction_id": {
+      "type": "string",
+      "title": "Linked Transaction ID"
+    },
+    "trace_no": {
+      "type": "string",
+      "title": "Trace No"
+    },
+    "client_name": {
+      "type": "string",
+      "title": "Client Name"
+    },
+    "document_type": {
+      "type": "string",
+      "title": "Document Type",
+      "enum": [
+        "Instruction Letter",
+        "Report",
+        "Proof of Payment - Part Payment (Attorney Email)",
+        "Proof of Payment - Part Payment (MLF Confirmation)",
+        "Proof of Payment - Settlement (Attorney Email)",
+        "Proof of Payment - Settlement (MLF Confirmation)",
+        "Invoice",
+        "Expert Report",
+        "Agreement",
+        "Statement",
+        "Medical Records",
+        "Other"
+      ]
+    },
+    "proof_source": {
+      "type": "string",
+      "title": "Proof Source",
+      "enum": [
+        "Attorney Email",
+        "MLF Confirmation"
+      ]
+    },
+    "payment_type": {
+      "type": "string",
+      "title": "Payment Type",
+      "enum": [
+        "Part Payment",
+        "Settlement"
+      ]
+    },
+    "payment_amount": {
+      "type": "number",
+      "title": "Payment Amount (R)"
+    },
+    "review_status": {
+      "type": "string",
+      "title": "Review Status",
+      "enum": [
+        "PENDING_REVIEW",
+        "APPROVED",
+        "REJECTED"
+      ]
+    },
+    "admin_comments": {
+      "type": "string",
+      "title": "Admin Comments"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "title": "Reviewed By"
+    },
+    "reviewed_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Reviewed Date"
+    },
+    "file_url": {
+      "type": "string",
+      "title": "File URL"
+    },
+    "file_name": {
+      "type": "string",
+      "title": "File Name"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "upload_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Upload Date"
+    }
+  },
+  "required": [
+    "firm_name",
+    "document_type",
+    "file_url",
+    "file_name"
+  ]
+}
